@@ -1,0 +1,113 @@
+version: 2
+
+project_name: github-runner
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: github-runner
+    main: ./cmd/github-runner
+    binary: github-runner
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/org/github-runner/internal/version.Version={{.Version}}
+      - -X github.com/org/github-runner/internal/version.Commit={{.Commit}}
+      - -X github.com/org/github-runner/internal/version.Date={{.Date}}
+
+archives:
+  - id: default
+    format: tar.gz
+    format_overrides:
+      - goos: darwin
+        format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+      - configs/config.example.toml
+      - scripts/github-runner.service
+      - scripts/completions/*
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+
+brews:
+  - repository:
+      owner: org
+      name: homebrew-tap
+    directory: Formula
+    homepage: "https://github.com/org/github-runner"
+    description: "Self-hosted GitHub Actions runner"
+    license: "MIT"
+    install: |
+      bin.install "github-runner"
+      etc.install "configs/config.example.toml" => "github-runner/config.toml"
+      (var/"github-runner").mkpath
+      (var/"log").mkpath
+      bash_completion.install "scripts/completions/github-runner.bash" => "github-runner"
+      zsh_completion.install "scripts/completions/github-runner.zsh" => "_github-runner"
+      fish_completion.install "scripts/completions/github-runner.fish"
+    test: |
+      system "#{bin}/github-runner", "version"
+    service: |
+      run [opt_bin/"github-runner", "start", "--config", etc/"github-runner/config.toml"]
+      keep_alive true
+      log_path var/"log/github-runner.log"
+      error_log_path var/"log/github-runner.log"
+      working_dir var/"github-runner"
+
+dockers:
+  - image_templates:
+      - "ghcr.io/org/github-runner:{{ .Version }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--build-arg=VERSION={{.Version}}"
+      - "--build-arg=COMMIT={{.Commit}}"
+      - "--build-arg=DATE={{.Date}}"
+    dockerfile: Dockerfile
+    goos: linux
+    goarch: amd64
+
+  - image_templates:
+      - "ghcr.io/org/github-runner:{{ .Version }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--build-arg=VERSION={{.Version}}"
+      - "--build-arg=COMMIT={{.Commit}}"
+      - "--build-arg=DATE={{.Date}}"
+    dockerfile: Dockerfile
+    goos: linux
+    goarch: arm64
+
+docker_manifests:
+  - name_template: "ghcr.io/org/github-runner:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/org/github-runner:{{ .Version }}-amd64"
+      - "ghcr.io/org/github-runner:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/org/github-runner:latest"
+    image_templates:
+      - "ghcr.io/org/github-runner:{{ .Version }}-amd64"
+      - "ghcr.io/org/github-runner:{{ .Version }}-arm64"

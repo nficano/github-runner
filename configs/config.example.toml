@@ -1,0 +1,132 @@
+# github-runner configuration
+# Documentation: https://github.com/org/github-runner
+
+[global]
+# Log level: debug, info, warn, error
+log_level = "info"
+# Log format: json, text
+log_format = "json"
+# Listen address for Prometheus metrics endpoint (/metrics)
+metrics_listen = "127.0.0.1:9252"
+# Listen address for health check endpoints (/healthz, /readyz)
+health_listen = "127.0.0.1:8484"
+# Maximum time to wait for in-flight jobs during shutdown
+shutdown_timeout = "30s"
+# Interval between job polling requests
+check_interval = "3s"
+
+[global.api]
+# GitHub API base URL (change for GitHub Enterprise)
+base_url = "https://api.github.com"
+# HTTP request timeout for API calls
+timeout = "30s"
+# Maximum number of retries for transient API failures
+max_retries = 3
+# Base duration for exponential backoff between retries
+retry_backoff = "1s"
+
+# Runner pool: Docker-based fast builds
+[[runners]]
+name = "docker-fast"
+# Repository, organization, or enterprise URL
+url = "https://github.com/org/repo"
+# Registration token (use env var interpolation for security)
+token = "${RUNNER_TOKEN_DOCKER}"
+# Executor type: shell, docker, kubernetes, firecracker
+executor = "docker"
+# Number of concurrent jobs this pool can handle
+concurrency = 6
+# Labels for job routing (GitHub uses these to match workflows to runners)
+labels = ["self-hosted", "linux", "docker", "x64"]
+# Working directory for job workspaces (must be absolute path)
+work_dir = "/var/lib/github-runner/docker-fast"
+# Default shell for run steps
+shell = "bash"
+# Set to true for single-use runners that de-register after one job
+# ephemeral = false
+
+  [runners.docker]
+  # Default container image for job steps
+  image = "ubuntu:22.04"
+  # Never run containers in privileged mode unless absolutely necessary
+  privileged = false
+  # Image pull policy: always, if-not-present, never
+  pull_policy = "if-not-present"
+  # Container memory limit (supports: b, k, m, g suffixes)
+  memory = "2g"
+  # Container CPU limit (fractional cores)
+  cpus = 2.0
+  # Docker network mode: bridge, host, none, or custom network name
+  network_mode = "bridge"
+  # Volume mounts (host:container:mode)
+  volumes = ["/cache:/cache:ro"]
+  # Glob patterns for allowed images (security: restrict what workflows can use)
+  allowed_images = ["ubuntu:*", "node:*", "golang:*", "python:*", "alpine:*"]
+  # DNS servers for containers
+  dns = ["8.8.8.8", "8.8.4.4"]
+  # Linux capabilities to drop (ALL recommended for security)
+  cap_drop = ["ALL"]
+  # Linux capabilities to add back selectively
+  cap_add = ["NET_BIND_SERVICE"]
+  # OCI runtime (e.g., "sysbox-runc" for rootless docker-in-docker)
+  # runtime = ""
+  # tmpfs mounts: { mount_point = "options" }
+  # tmpfs = { "/tmp" = "rw,noexec,nosuid,size=512m" }
+
+  [runners.cache]
+  # Cache backend type: local, s3, gcs
+  type = "local"
+  # Path for local cache storage
+  path = "/cache/docker-fast"
+  # Maximum cache size (supports: b, k, m, g suffixes)
+  max_size = "10g"
+
+  # Inject these environment variables into every job
+  [runners.environment]
+  CI = "true"
+  RUNNER_POOL = "docker-fast"
+
+# Runner pool: Shell executor for lightweight tasks
+# [[runners]]
+# name = "shell-local"
+# url = "https://github.com/org/repo"
+# token = "${RUNNER_TOKEN_SHELL}"
+# executor = "shell"
+# concurrency = 2
+# labels = ["self-hosted", "linux", "shell"]
+# work_dir = "/var/lib/github-runner/shell-local"
+# shell = "bash"
+# # Only pass these env vars to jobs (security: prevents leaking host env)
+# env_allowlist = ["PATH", "HOME", "LANG"]
+#
+#   [runners.cache]
+#   type = "s3"
+#   [runners.cache.s3]
+#   bucket = "my-runner-cache"
+#   region = "us-east-1"
+#   # For S3-compatible services (MinIO, etc.)
+#   # endpoint = "https://minio.example.com"
+#   access_key = "${AWS_ACCESS_KEY_ID}"
+#   secret_key = "${AWS_SECRET_ACCESS_KEY}"
+#   # Set to true to use IAM role instead of access keys
+#   # use_iam_role = false
+
+# Runner pool: Kubernetes ephemeral runners
+# [[runners]]
+# name = "k8s-ephemeral"
+# url = "https://github.com/org/repo"
+# token = "${RUNNER_TOKEN_K8S}"
+# executor = "kubernetes"
+# concurrency = 20
+# labels = ["self-hosted", "linux", "k8s", "ephemeral"]
+# ephemeral = true
+#
+#   [runners.kubernetes]
+#   namespace = "github-runner"
+#   image = "ubuntu:22.04"
+#   service_account = "github-runner"
+#   cpu_request = "500m"
+#   cpu_limit = "2000m"
+#   memory_request = "512Mi"
+#   memory_limit = "4Gi"
+#   pull_policy = "IfNotPresent"
