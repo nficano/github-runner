@@ -1,0 +1,19 @@
+:root {
+  --runner-matte-black: #141414;
+}
+
+[data-md-color-scheme="default"] .md-header,
+[data-md-color-scheme="default"] .md-tabs,
+[data-md-color-scheme="slate"] .md-header,
+[data-md-color-scheme="slate"] .md-tabs {
+  background-color: var(--runner-matte-black);
+}
+
+[data-md-color-scheme="default"] .md-tabs__link--active,
+[data-md-color-scheme="default"] .md-tabs__link:focus,
+[data-md-color-scheme="default"] .md-tabs__link:hover,
+[data-md-color-scheme="slate"] .md-tabs__link--active,
+[data-md-color-scheme="slate"] .md-tabs__link:focus,
+[data-md-color-scheme="slate"] .md-tabs__link:hover {
+  color: #ffd54f;
+}

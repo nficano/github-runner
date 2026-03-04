@@ -10,22 +10,35 @@ pools**. Each pool maps to a `[[runners]]` entry in the config file and
 operates independently with its own executor type, concurrency level, and
 GitHub API credentials.
 
-```
-┌─────────────────────────────────────────────────┐
-│                   CLI (cobra)                    │
-├─────────────────────────────────────────────────┤
-│              Runner Manager (1 per process)      │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐        │
-│  │ Worker 1 │ │ Worker 2 │ │ Worker N │  ...    │
-│  │ (Job)    │ │ (Idle)   │ │ (Job)    │        │
-│  └──────────┘ └──────────┘ └──────────┘        │
-├─────────────────────────────────────────────────┤
-│  Executor Layer   │  Cache Layer  │  Artifact   │
-│  (shell/docker/   │  (local/s3/   │  Manager    │
-│   k8s/firecracker)│   gcs)        │             │
-├─────────────────────────────────────────────────┤
-│  GitHub API Client │ Metrics │ Health │ Logger   │
-└─────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    CLI["CLI (cobra)"] --> Manager["Runner Manager (1 per process)"]
+
+    subgraph Pools["Runner pools (one per [[runners]] entry)"]
+      W1["Worker 1 (job)"]
+      W2["Worker 2 (idle)"]
+      WN["Worker N (job)"]
+    end
+
+    Manager --> Pools
+
+    subgraph Layers["Execution + services"]
+      Executor["Executor layer<br/>shell / docker / kubernetes / firecracker"]
+      Cache["Cache layer<br/>local / s3 / gcs"]
+      Artifact["Artifact manager"]
+      GitHubAPI["GitHub API client"]
+      Metrics["Metrics"]
+      Health["Health"]
+      Logger["Logger"]
+    end
+
+    Pools --> Executor
+    Pools --> Cache
+    Pools --> Artifact
+    Manager --> GitHubAPI
+    Manager --> Metrics
+    Manager --> Health
+    Manager --> Logger
 ```
 
 ## Component diagram
@@ -203,23 +216,25 @@ If shutdown_timeout expires:
 
 ## Data flow: job lifecycle
 
-```
-GitHub API                    Runner                         Executor
-    │                           │                               │
-    │◄── poll (GET /jobs) ──────│                               │
-    │── job payload ───────────►│                               │
-    │                           │── Prepare() ─────────────────►│
-    │◄── status: in_progress ───│                               │
-    │                           │── Run(step 1) ───────────────►│
-    │◄── heartbeat ─────────────│                               │
-    │◄── step status ───────────│◄── StepResult ────────────────│
-    │                           │── Run(step 2) ───────────────►│
-    │◄── heartbeat ─────────────│                               │
-    │◄── step status ───────────│◄── StepResult ────────────────│
-    │                           │                               │
-    │◄── status: completed ─────│                               │
-    │                           │── Cleanup() ─────────────────►│
-    │                           │                               │
+```mermaid
+sequenceDiagram
+    participant GH as GitHub API
+    participant R as Runner
+    participant E as Executor
+
+    R->>GH: Poll jobs (GET /jobs)
+    GH-->>R: Job payload
+    R->>E: Prepare()
+    R->>GH: Status in_progress
+
+    loop For each workflow step
+      R->>E: Run(step)
+      E-->>R: StepResult
+      R->>GH: Step status + heartbeat
+    end
+
+    R->>GH: Status completed
+    R->>E: Cleanup()
 ```
 
 ## Package dependency graph
