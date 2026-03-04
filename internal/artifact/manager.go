@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // ManagerConfig holds configuration for the local artifact manager.

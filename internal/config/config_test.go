@@ -182,7 +182,7 @@ log_format = "text"
 
 [[runners]]
 name = "test-runner"
-url = "https://github.com/org/repo"
+url = "https://github.com/nficano/github-runner"
 token = "ghp_test123"
 executor = "docker"
 concurrency = 2
@@ -207,7 +207,7 @@ retry_backoff = "2s"
 
 [[runners]]
 name = "docker-fast"
-url = "https://github.com/org/repo"
+url = "https://github.com/nficano/github-runner"
 token = "ghp_test123"
 executor = "docker"
 concurrency = 4
@@ -326,7 +326,7 @@ func TestLoadFromBytes_EnvInterpolation(t *testing.T) {
 	tomlData := `
 [[runners]]
 name = "env-test"
-url = "https://github.com/org/repo"
+url = "https://github.com/nficano/github-runner"
 token = "${TEST_RUNNER_TOKEN}"
 executor = "shell"
 concurrency = 1
@@ -350,7 +350,7 @@ func TestLoadFromBytes_Defaults(t *testing.T) {
 	tomlData := `
 [[runners]]
 name = "defaults-test"
-url = "https://github.com/org/repo"
+url = "https://github.com/nficano/github-runner"
 token = "tok"
 executor = "shell"
 concurrency = 1
@@ -386,7 +386,7 @@ func TestValidate(t *testing.T) {
 				Runners: []RunnerConfig{
 					{
 						Name:        "ok",
-						URL:         "https://github.com/org/repo",
+						URL:         "https://github.com/nficano/github-runner",
 						Token:       "tok",
 						Executor:    "shell",
 						Concurrency: 1,
@@ -409,7 +409,7 @@ func TestValidate(t *testing.T) {
 				Global: DefaultConfig().Global,
 				Runners: []RunnerConfig{
 					{
-						URL:         "https://github.com/org/repo",
+						URL:         "https://github.com/nficano/github-runner",
 						Token:       "tok",
 						Executor:    "shell",
 						Concurrency: 1,
@@ -425,7 +425,7 @@ func TestValidate(t *testing.T) {
 				Runners: []RunnerConfig{
 					{
 						Name:        "bad-exec",
-						URL:         "https://github.com/org/repo",
+						URL:         "https://github.com/nficano/github-runner",
 						Token:       "tok",
 						Executor:    "podman",
 						Concurrency: 1,
@@ -441,7 +441,7 @@ func TestValidate(t *testing.T) {
 				Runners: []RunnerConfig{
 					{
 						Name:        "zero-conc",
-						URL:         "https://github.com/org/repo",
+						URL:         "https://github.com/nficano/github-runner",
 						Token:       "tok",
 						Executor:    "shell",
 						Concurrency: 0,
@@ -457,7 +457,7 @@ func TestValidate(t *testing.T) {
 				Runners: []RunnerConfig{
 					{
 						Name:        "rel-path",
-						URL:         "https://github.com/org/repo",
+						URL:         "https://github.com/nficano/github-runner",
 						Token:       "tok",
 						Executor:    "shell",
 						Concurrency: 1,
@@ -474,7 +474,7 @@ func TestValidate(t *testing.T) {
 				Runners: []RunnerConfig{
 					{
 						Name:        "bad-url",
-						URL:         "ftp://github.com/org/repo",
+						URL:         "ftp://github.com/nficano/github-runner",
 						Token:       "tok",
 						Executor:    "shell",
 						Concurrency: 1,
@@ -490,7 +490,7 @@ func TestValidate(t *testing.T) {
 				Runners: []RunnerConfig{
 					{
 						Name:        "no-token",
-						URL:         "https://github.com/org/repo",
+						URL:         "https://github.com/nficano/github-runner",
 						Executor:    "shell",
 						Concurrency: 1,
 					},
@@ -505,7 +505,7 @@ func TestValidate(t *testing.T) {
 				Runners: []RunnerConfig{
 					{
 						Name:        "docker-no-image",
-						URL:         "https://github.com/org/repo",
+						URL:         "https://github.com/nficano/github-runner",
 						Token:       "tok",
 						Executor:    "docker",
 						Concurrency: 1,
@@ -522,14 +522,14 @@ func TestValidate(t *testing.T) {
 				Runners: []RunnerConfig{
 					{
 						Name:        "dupe",
-						URL:         "https://github.com/org/repo",
+						URL:         "https://github.com/nficano/github-runner",
 						Token:       "tok",
 						Executor:    "shell",
 						Concurrency: 1,
 					},
 					{
 						Name:        "dupe",
-						URL:         "https://github.com/org/repo",
+						URL:         "https://github.com/nficano/github-runner",
 						Token:       "tok",
 						Executor:    "shell",
 						Concurrency: 1,
@@ -545,7 +545,7 @@ func TestValidate(t *testing.T) {
 				Runners: []RunnerConfig{
 					{
 						Name:        "docker-ok",
-						URL:         "https://github.com/org/repo",
+						URL:         "https://github.com/nficano/github-runner",
 						Token:       "tok",
 						Executor:    "docker",
 						Concurrency: 2,
@@ -567,7 +567,7 @@ func TestValidate(t *testing.T) {
 				Runners: []RunnerConfig{
 					{
 						Name:        "k8s-ok",
-						URL:         "https://github.com/org/repo",
+						URL:         "https://github.com/nficano/github-runner",
 						Token:       "tok",
 						Executor:    "kubernetes",
 						Concurrency: 1,
@@ -592,7 +592,7 @@ func TestValidate(t *testing.T) {
 				Runners: []RunnerConfig{
 					{
 						Name:        "log-level",
-						URL:         "https://github.com/org/repo",
+						URL:         "https://github.com/nficano/github-runner",
 						Token:       "tok",
 						Executor:    "shell",
 						Concurrency: 1,

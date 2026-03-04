@@ -16,7 +16,7 @@ const (
 	// FieldPoolName is the name of the runner pool this runner belongs to.
 	FieldPoolName = "pool_name"
 
-	// FieldRepo is the owner/repo slug (e.g. "org/repo").
+	// FieldRepo is the owner/repo slug (e.g. "nficano/github-runner").
 	FieldRepo = "repository"
 
 	// FieldWorkflow is the name or path of the workflow file.

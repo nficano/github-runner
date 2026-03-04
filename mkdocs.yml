@@ -1,9 +1,9 @@
 site_name: github-runner
 site_description: Self-hosted GitHub Actions runner built in Go
-site_url: https://org.github.io/github-runner
+site_url: https://nficano.github.io/github-runner
 
-repo_name: org/github-runner
-repo_url: https://github.com/org/github-runner
+repo_name: nficano/github-runner
+repo_url: https://github.com/nficano/github-runner
 
 theme:
   name: material

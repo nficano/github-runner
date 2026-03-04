@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // GCSCacheConfig holds configuration for the Google Cloud Storage cache backend.

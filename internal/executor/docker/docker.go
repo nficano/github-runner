@@ -13,8 +13,8 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 
-	"github.com/org/github-runner/internal/executor"
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/internal/executor"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 const (

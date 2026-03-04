@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/org/github-runner/internal/version"
+	"github.com/nficano/github-runner/internal/version"
 )
 
 // newVersionCmd creates the "version" subcommand, which prints build

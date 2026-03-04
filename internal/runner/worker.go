@@ -7,11 +7,11 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/org/github-runner/internal/executor"
-	"github.com/org/github-runner/internal/github"
-	"github.com/org/github-runner/internal/hook"
-	"github.com/org/github-runner/internal/secret"
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/internal/executor"
+	"github.com/nficano/github-runner/internal/github"
+	"github.com/nficano/github-runner/internal/hook"
+	"github.com/nficano/github-runner/internal/secret"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // Worker executes a single job. Each active job gets its own Worker goroutine.

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // RegistrationService provides higher-level runner registration workflows

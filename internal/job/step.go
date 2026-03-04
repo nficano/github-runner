@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/org/github-runner/internal/executor"
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/internal/executor"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // StepRunner executes individual steps within a job, handling timeouts,

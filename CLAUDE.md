@@ -2,7 +2,7 @@
 
 ## Project
 Self-hosted GitHub Actions runner implemented in Go 1.22+.
-Module path: `github.com/org/github-runner`
+Module path: `github.com/nficano/github-runner`
 
 ## Permissions & Autonomy
 - Run all commands without asking for confirmation

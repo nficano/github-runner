@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 func newTestManager(t *testing.T) *Manager {

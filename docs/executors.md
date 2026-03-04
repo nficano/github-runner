@@ -145,7 +145,7 @@ When `allowed_images` is set, only images matching at least one glob pattern
 are permitted. This prevents workflows from using arbitrary images:
 
 ```toml
-allowed_images = ["ubuntu:*", "node:18-*", "ghcr.io/org/*"]
+allowed_images = ["ubuntu:*", "node:18-*", "ghcr.io/nficano/*"]
 ```
 
 ### Volume mounts
@@ -306,7 +306,7 @@ Firecracker is ideal for:
 The executor factory pattern allows registering custom backends:
 
 ```go
-import "github.com/org/github-runner/internal/executor"
+import "github.com/nficano/github-runner/internal/executor"
 
 func init() {
     executor.Register("my-executor", func() executor.Executor {

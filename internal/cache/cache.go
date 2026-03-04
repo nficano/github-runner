@@ -7,7 +7,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // ErrCacheMiss is returned by Get when the requested key is not present in

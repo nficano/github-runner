@@ -6,7 +6,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // ArtifactStore abstracts the storage backend used for workflow artifacts.

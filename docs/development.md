@@ -257,8 +257,8 @@ git push origin v1.0.0
 | Artefact | Format | Description |
 |----------|--------|-------------|
 | Binaries | tar.gz (Linux), zip (macOS) | Standalone executables |
-| Docker images | Multi-arch manifest | `ghcr.io/org/github-runner:<version>` |
-| Homebrew | Formula in tap | `brew install org/tap/github-runner` |
+| Docker images | Multi-arch manifest | `ghcr.io/nficano/github-runner:<version>` |
+| Homebrew | Formula in tap | `brew install nficano/tap/github-runner` |
 | Checksums | SHA-256 | `checksums.txt` |
 
 ### Docker images
@@ -266,10 +266,10 @@ git push origin v1.0.0
 Multi-architecture images are published to GitHub Container Registry:
 
 ```
-ghcr.io/org/github-runner:1.0.0          # Multi-arch manifest
-ghcr.io/org/github-runner:1.0.0-amd64    # Linux AMD64
-ghcr.io/org/github-runner:1.0.0-arm64    # Linux ARM64
-ghcr.io/org/github-runner:latest         # Latest release
+ghcr.io/nficano/github-runner:1.0.0          # Multi-arch manifest
+ghcr.io/nficano/github-runner:1.0.0-amd64    # Linux AMD64
+ghcr.io/nficano/github-runner:1.0.0-arm64    # Linux ARM64
+ghcr.io/nficano/github-runner:latest         # Latest release
 ```
 
 ## Deployment
@@ -293,7 +293,7 @@ The systemd unit includes security hardening:
 ### launchd (macOS)
 
 ```sh
-brew install org/tap/github-runner
+brew install nficano/tap/github-runner
 brew services start github-runner
 ```
 
@@ -303,7 +303,7 @@ brew services start github-runner
 docker run -d \
   -v /etc/github-runner:/etc/github-runner:ro \
   -v /var/lib/github-runner:/var/lib/github-runner \
-  ghcr.io/org/github-runner:latest
+  ghcr.io/nficano/github-runner:latest
 ```
 
 ## Make targets

@@ -1,4 +1,4 @@
-module github.com/org/github-runner
+module github.com/nficano/github-runner
 
 go 1.24.0
 

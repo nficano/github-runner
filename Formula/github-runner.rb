@@ -1,23 +1,23 @@
 class GithubRunner < Formula
   desc "Self-hosted GitHub Actions runner"
-  homepage "https://github.com/org/github-runner"
+  homepage "https://github.com/nficano/github-runner"
   license "MIT"
 
   on_macos do
     on_intel do
-      url "https://github.com/org/github-runner/releases/download/v#{version}/github-runner_#{version}_darwin_amd64.zip"
+      url "https://github.com/nficano/github-runner/releases/download/v#{version}/github-runner_#{version}_darwin_amd64.zip"
     end
     on_arm do
-      url "https://github.com/org/github-runner/releases/download/v#{version}/github-runner_#{version}_darwin_arm64.zip"
+      url "https://github.com/nficano/github-runner/releases/download/v#{version}/github-runner_#{version}_darwin_arm64.zip"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.com/org/github-runner/releases/download/v#{version}/github-runner_#{version}_linux_amd64.tar.gz"
+      url "https://github.com/nficano/github-runner/releases/download/v#{version}/github-runner_#{version}_linux_amd64.tar.gz"
     end
     on_arm do
-      url "https://github.com/org/github-runner/releases/download/v#{version}/github-runner_#{version}_linux_arm64.tar.gz"
+      url "https://github.com/nficano/github-runner/releases/download/v#{version}/github-runner_#{version}_linux_arm64.tar.gz"
     end
   end
 

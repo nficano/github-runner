@@ -11,11 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/org/github-runner/internal/config"
-	"github.com/org/github-runner/internal/github"
-	"github.com/org/github-runner/internal/health"
-	"github.com/org/github-runner/internal/hook"
-	"github.com/org/github-runner/internal/metrics"
+	"github.com/nficano/github-runner/internal/config"
+	"github.com/nficano/github-runner/internal/github"
+	"github.com/nficano/github-runner/internal/health"
+	"github.com/nficano/github-runner/internal/hook"
+	"github.com/nficano/github-runner/internal/metrics"
 )
 
 // Manager is the top-level orchestrator that supervises runner pools,

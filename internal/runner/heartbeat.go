@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/org/github-runner/internal/github"
+	"github.com/nficano/github-runner/internal/github"
 )
 
 const defaultHeartbeatInterval = 10 * time.Second

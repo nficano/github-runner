@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/org/github-runner/internal/config"
+	"github.com/nficano/github-runner/internal/config"
 )
 
 // newCacheCmd creates the "cache" subcommand with its sub-subcommands

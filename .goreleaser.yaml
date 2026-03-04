@@ -21,9 +21,9 @@ builds:
       - arm64
     ldflags:
       - -s -w
-      - -X github.com/org/github-runner/internal/version.Version={{.Version}}
-      - -X github.com/org/github-runner/internal/version.Commit={{.Commit}}
-      - -X github.com/org/github-runner/internal/version.Date={{.Date}}
+      - -X github.com/nficano/github-runner/internal/version.Version={{.Version}}
+      - -X github.com/nficano/github-runner/internal/version.Commit={{.Commit}}
+      - -X github.com/nficano/github-runner/internal/version.Date={{.Date}}
 
 archives:
   - id: default
@@ -54,10 +54,10 @@ changelog:
 
 brews:
   - repository:
-      owner: org
+      owner: nficano
       name: homebrew-tap
     directory: Formula
-    homepage: "https://github.com/org/github-runner"
+    homepage: "https://github.com/nficano/github-runner"
     description: "Self-hosted GitHub Actions runner"
     license: "MIT"
     install: |
@@ -79,7 +79,7 @@ brews:
 
 dockers:
   - image_templates:
-      - "ghcr.io/org/github-runner:{{ .Version }}-amd64"
+      - "ghcr.io/nficano/github-runner:{{ .Version }}-amd64"
     use: buildx
     build_flag_templates:
       - "--platform=linux/amd64"
@@ -91,7 +91,7 @@ dockers:
     goarch: amd64
 
   - image_templates:
-      - "ghcr.io/org/github-runner:{{ .Version }}-arm64"
+      - "ghcr.io/nficano/github-runner:{{ .Version }}-arm64"
     use: buildx
     build_flag_templates:
       - "--platform=linux/arm64"
@@ -103,11 +103,11 @@ dockers:
     goarch: arm64
 
 docker_manifests:
-  - name_template: "ghcr.io/org/github-runner:{{ .Version }}"
+  - name_template: "ghcr.io/nficano/github-runner:{{ .Version }}"
     image_templates:
-      - "ghcr.io/org/github-runner:{{ .Version }}-amd64"
-      - "ghcr.io/org/github-runner:{{ .Version }}-arm64"
-  - name_template: "ghcr.io/org/github-runner:latest"
+      - "ghcr.io/nficano/github-runner:{{ .Version }}-amd64"
+      - "ghcr.io/nficano/github-runner:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/nficano/github-runner:latest"
     image_templates:
-      - "ghcr.io/org/github-runner:{{ .Version }}-amd64"
-      - "ghcr.io/org/github-runner:{{ .Version }}-arm64"
+      - "ghcr.io/nficano/github-runner:{{ .Version }}-amd64"
+      - "ghcr.io/nficano/github-runner:{{ .Version }}-arm64"

@@ -1,5 +1,5 @@
 # github-runner configuration
-# Documentation: https://github.com/org/github-runner
+# Documentation: https://github.com/nficano/github-runner
 
 [global]
 # Log level: debug, info, warn, error
@@ -29,7 +29,7 @@ retry_backoff = "1s"
 [[runners]]
 name = "docker-fast"
 # Repository, organization, or enterprise URL
-url = "https://github.com/org/repo"
+url = "https://github.com/nficano/github-runner"
 # Registration token (use env var interpolation for security)
 token = "${RUNNER_TOKEN_DOCKER}"
 # Executor type: shell, docker, kubernetes, firecracker
@@ -89,7 +89,7 @@ shell = "bash"
 # Runner pool: Shell executor for lightweight tasks
 # [[runners]]
 # name = "shell-local"
-# url = "https://github.com/org/repo"
+# url = "https://github.com/nficano/github-runner"
 # token = "${RUNNER_TOKEN_SHELL}"
 # executor = "shell"
 # concurrency = 2
@@ -114,7 +114,7 @@ shell = "bash"
 # Runner pool: Kubernetes ephemeral runners
 # [[runners]]
 # name = "k8s-ephemeral"
-# url = "https://github.com/org/repo"
+# url = "https://github.com/nficano/github-runner"
 # token = "${RUNNER_TOKEN_K8S}"
 # executor = "kubernetes"
 # concurrency = 20

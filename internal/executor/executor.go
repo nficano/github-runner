@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // ExecutorType identifies a supported executor backend.

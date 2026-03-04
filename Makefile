@@ -1,5 +1,5 @@
 BINARY     := github-runner
-MODULE     := github.com/org/github-runner
+MODULE     := github.com/nficano/github-runner
 VERSION    ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 COMMIT     ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 DATE       ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")

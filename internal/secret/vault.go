@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // VaultProvider is a scaffold implementation for HashiCorp Vault as a secret backend.

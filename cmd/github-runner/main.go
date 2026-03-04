@@ -6,7 +6,7 @@ package main
 import (
 	"os"
 
-	"github.com/org/github-runner/internal/cli"
+	"github.com/nficano/github-runner/internal/cli"
 )
 
 func main() {

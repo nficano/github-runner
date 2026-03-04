@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // ScriptHook executes a shell script or binary as a hook.

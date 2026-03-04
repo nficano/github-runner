@@ -1,6 +1,6 @@
 [Unit]
 Description=GitHub Actions Self-Hosted Runner
-Documentation=https://github.com/org/github-runner
+Documentation=https://github.com/nficano/github-runner
 After=network-online.target docker.service
 Wants=network-online.target
 Requires=docker.service

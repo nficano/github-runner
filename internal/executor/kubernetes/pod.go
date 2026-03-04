@@ -34,7 +34,7 @@ package kubernetes
 import (
 	"fmt"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // PodSpec is a placeholder type representing a Kubernetes pod specification.

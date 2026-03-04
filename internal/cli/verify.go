@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/org/github-runner/internal/config"
-	"github.com/org/github-runner/internal/github"
+	"github.com/nficano/github-runner/internal/config"
+	"github.com/nficano/github-runner/internal/github"
 )
 
 // newVerifyCmd creates the "verify" subcommand, which tests connectivity

@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/org/github-runner/internal/config"
-	"github.com/org/github-runner/internal/runner"
+	"github.com/nficano/github-runner/internal/config"
+	"github.com/nficano/github-runner/internal/runner"
 )
 
 // newRunCmd creates the "run" subcommand, which executes a single job

@@ -6,7 +6,7 @@ package secret
 import (
 	"context"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // SecretProvider retrieves named secrets for use during job execution.

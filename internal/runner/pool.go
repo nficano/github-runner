@@ -9,11 +9,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/org/github-runner/internal/config"
-	"github.com/org/github-runner/internal/executor"
-	"github.com/org/github-runner/internal/github"
-	"github.com/org/github-runner/internal/hook"
-	"github.com/org/github-runner/internal/secret"
+	"github.com/nficano/github-runner/internal/config"
+	"github.com/nficano/github-runner/internal/executor"
+	"github.com/nficano/github-runner/internal/github"
+	"github.com/nficano/github-runner/internal/hook"
+	"github.com/nficano/github-runner/internal/secret"
 )
 
 // Pool manages a set of workers for a single [[runners]] configuration entry.

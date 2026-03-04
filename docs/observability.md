@@ -44,7 +44,7 @@ Example JSON log output:
   "level": "INFO",
   "msg": "job completed",
   "job_id": 12345,
-  "repository": "org/repo",
+  "repository": "nficano/github-runner",
   "workflow": "CI",
   "duration": "45.2s",
   "component": "worker"

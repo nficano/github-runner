@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // WebhookHook sends an HTTP POST notification to a configured URL when

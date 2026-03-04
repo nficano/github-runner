@@ -33,7 +33,7 @@ production-grade observability.
 Requires Go 1.22+.
 
 ```sh
-git clone https://github.com/org/github-runner.git
+git clone https://github.com/nficano/github-runner.git
 cd github-runner
 make build
 ```
@@ -43,14 +43,14 @@ The binary is written to `bin/github-runner`.
 ### Install via Homebrew
 
 ```sh
-brew install org/tap/github-runner
+brew install nficano/tap/github-runner
 ```
 
 ### Register a runner
 
 ```sh
 github-runner register \
-  --url https://github.com/your-org/your-repo \
+  --url https://github.com/nficano/github-runner \
   --token YOUR_REGISTRATION_TOKEN \
   --executor docker \
   --name my-runner \
@@ -84,7 +84,7 @@ base_url = "https://api.github.com"
 
 [[runners]]
 name = "docker-pool"
-url = "https://github.com/your-org/your-repo"
+url = "https://github.com/nficano/github-runner"
 token = "${RUNNER_TOKEN}"
 executor = "docker"
 concurrency = 4
@@ -146,7 +146,7 @@ Exit codes: `0` success, `1` general error, `2` config error, `3` auth error.
 
 ```sh
 docker run -v /etc/github-runner:/etc/github-runner \
-  ghcr.io/org/github-runner:latest
+  ghcr.io/nficano/github-runner:latest
 ```
 
 ### systemd (Linux)

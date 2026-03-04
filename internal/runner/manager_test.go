@@ -13,9 +13,9 @@ func TestParseGitHubURL(t *testing.T) {
 	}{
 		{
 			name:      "full repo URL",
-			url:       "https://github.com/myorg/myrepo",
-			wantOwner: "myorg",
-			wantRepo:  "myrepo",
+			url:       "https://github.com/nficano/github-runner",
+			wantOwner: "nficano",
+			wantRepo:  "github-runner",
 		},
 		{
 			name:      "org-level URL",
@@ -25,9 +25,9 @@ func TestParseGitHubURL(t *testing.T) {
 		},
 		{
 			name:      "URL with trailing slash",
-			url:       "https://github.com/myorg/myrepo/",
-			wantOwner: "myorg",
-			wantRepo:  "myrepo",
+			url:       "https://github.com/nficano/github-runner/",
+			wantOwner: "nficano",
+			wantRepo:  "github-runner",
 		},
 		{
 			name:      "enterprise URL",

@@ -15,9 +15,9 @@ ARG DATE=unknown
 
 RUN CGO_ENABLED=0 go build \
     -ldflags "-s -w \
-      -X github.com/org/github-runner/internal/version.Version=${VERSION} \
-      -X github.com/org/github-runner/internal/version.Commit=${COMMIT} \
-      -X github.com/org/github-runner/internal/version.Date=${DATE}" \
+      -X github.com/nficano/github-runner/internal/version.Version=${VERSION} \
+      -X github.com/nficano/github-runner/internal/version.Commit=${COMMIT} \
+      -X github.com/nficano/github-runner/internal/version.Date=${DATE}" \
     -o /github-runner ./cmd/github-runner
 
 FROM alpine:3.19

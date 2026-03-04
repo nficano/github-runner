@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // Context holds the runtime context available to expressions and commands

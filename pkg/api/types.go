@@ -110,7 +110,7 @@ type Job struct {
 	Env map[string]string `json:"env,omitempty"`
 	// Workspace is the filesystem path where the job should execute.
 	Workspace string `json:"workspace"`
-	// Repository is the full owner/name of the repository (e.g., "org/repo").
+	// Repository is the full owner/name of the repository (e.g., "nficano/github-runner").
 	Repository string `json:"repository"`
 	// Ref is the git ref that triggered the workflow (e.g., "refs/heads/main").
 	Ref string `json:"ref"`

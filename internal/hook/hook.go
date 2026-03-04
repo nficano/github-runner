@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/org/github-runner/pkg/api"
+	"github.com/nficano/github-runner/pkg/api"
 )
 
 // Hook is implemented by any value that needs to observe or modify behaviour
