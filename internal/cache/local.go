@@ -377,7 +377,11 @@ func (lc *LocalCache) withFlock(fn func() error) error {
 	if err := flock(lockFile); err != nil {
 		return fmt.Errorf("acquiring file lock: %w", err)
 	}
-	defer funlock(lockFile)
+	defer func() {
+		if err := funlock(lockFile); err != nil {
+			slog.Warn("failed to release cache file lock", "error", err)
+		}
+	}()
 
 	return fn()
 }

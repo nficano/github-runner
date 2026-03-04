@@ -209,13 +209,6 @@ func splitPath(rawURL string) []string {
 // isAuthError returns true if the error represents a 401 or 403 response
 // from the GitHub API.
 func isAuthError(err error) bool {
-	type statusCoder interface {
-		Error() string
-	}
-	// Check for *github.APIError by inspecting the error chain.
-	type apiErr interface {
-		Error() string
-	}
 	// Walk the error chain looking for an APIError with an auth status code.
 	current := err
 	for current != nil {

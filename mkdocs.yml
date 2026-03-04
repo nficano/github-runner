@@ -7,21 +7,28 @@ repo_url: https://github.com/nficano/github-runner
 
 theme:
   name: material
+  font:
+    text: IBM Plex Sans
+    code: JetBrains Mono
   palette:
-    - scheme: default
-      primary: deep purple
-      accent: purple
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: amber
       toggle:
-        icon: material/brightness-7
+        icon: material/weather-night
         name: Switch to dark mode
-    - scheme: slate
-      primary: deep purple
-      accent: purple
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: cyan
+      accent: lime
       toggle:
-        icon: material/brightness-4
+        icon: material/weather-sunny
         name: Switch to light mode
   features:
     - content.code.copy
+    - navigation.tabs
+    - navigation.instant
     - navigation.sections
     - navigation.expand
     - navigation.top

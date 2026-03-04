@@ -23,7 +23,6 @@ import (
 // One Manager runs per process.
 type Manager struct {
 	cfg     *config.Config
-	cfgMu   sync.RWMutex // Protects cfg during hot reload.
 	pools   []*Pool
 	metrics *metrics.Metrics
 	logger  *slog.Logger

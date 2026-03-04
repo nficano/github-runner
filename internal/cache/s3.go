@@ -7,7 +7,6 @@ import (
 	"io"
 	"log/slog"
 	"strconv"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -47,7 +46,6 @@ type S3CacheConfig struct {
 // additional mutex for internal state like hit/miss counters.
 type S3Cache struct {
 	cfg S3CacheConfig
-	mu  sync.Mutex // guards nothing mutable beyond atomic counters; reserved for future use
 
 	hitCount      atomic.Int64
 	missCount     atomic.Int64
