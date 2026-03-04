@@ -59,6 +59,7 @@ brews:
   - repository:
       owner: nficano
       name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     directory: Formula
     homepage: "https://github.com/nficano/github-runner"
     description: "Self-hosted GitHub Actions runner"
