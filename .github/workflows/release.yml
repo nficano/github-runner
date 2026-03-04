@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
 
 permissions:
   contents: write
@@ -17,14 +17,40 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Determine next version
+        id: version
+        run: |
+          latest=$(git tag -l 'v*' --sort=-v:refname | head -n1)
+          if [ -z "$latest" ]; then
+            next="v0.1.0"
+          else
+            # Strip leading 'v', increment patch
+            base="${latest#v}"
+            major=$(echo "$base" | cut -d. -f1)
+            minor=$(echo "$base" | cut -d. -f2)
+            patch=$(echo "$base" | cut -d. -f3)
+            next="v${major}.${minor}.$((patch + 1))"
+          fi
+          echo "tag=$next" >> "$GITHUB_OUTPUT"
+          echo "Next version: $next"
+
+      - name: Create release tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24"
 
       - name: Install debaser
         run: |
-          curl -sL "https://github.com/nficano/debaser/releases/latest/download/debaser-v0.1.11-x86_64-unknown-linux-gnu.tar.gz" | tar xz
-          sudo mv debaser-v0.1.11-x86_64-unknown-linux-gnu/debaser /usr/local/bin/
+          tmp=$(mktemp -d)
+          curl -sL "https://github.com/nficano/debaser/releases/latest/download/debaser-v0.1.11-x86_64-unknown-linux-gnu.tar.gz" | tar xz -C "$tmp"
+          sudo mv "$tmp"/debaser-*/debaser /usr/local/bin/
+          rm -rf "$tmp"
 
       - name: Generate release name
         id: release-name
