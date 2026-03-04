@@ -193,5 +193,5 @@ together. The following rules are enforced:
 
 ## Example
 
-See [configs/config.example.toml](../configs/config.example.toml) for a fully
+See [configs/config.example.toml](https://github.com/nficano/github-runner/blob/main/configs/config.example.toml) for a fully
 annotated example with all available options.
