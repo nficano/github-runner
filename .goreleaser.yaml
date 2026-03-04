@@ -43,6 +43,9 @@ checksum:
   name_template: "checksums.txt"
   algorithm: sha256
 
+release:
+  name_template: "{{ .Tag }} — {{ .Env.RELEASE_NAME }}"
+
 changelog:
   sort: asc
   filters:

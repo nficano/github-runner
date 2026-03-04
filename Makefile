@@ -64,6 +64,12 @@ docker-build: ## Build Docker image
 goreleaser: ## Snapshot release build
 	goreleaser release --snapshot --clean
 
+.PHONY: release
+release: ## Create a new release tag and push (usage: make release v=0.1.0)
+	@if [ -z "$(v)" ]; then echo "Usage: make release v=0.1.0"; exit 1; fi
+	git tag -a "v$(v)" -m "Release v$(v)"
+	git push origin "v$(v)"
+
 .PHONY: clean
 clean: ## Remove build artifacts
 	rm -rf bin/ dist/ coverage.out coverage.html
