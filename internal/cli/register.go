@@ -2,10 +2,13 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
@@ -132,7 +135,7 @@ func runRegister(cmd *cobra.Command, _ []string) error {
 func loadOrDefaultConfig(path string) (*config.Config, error) {
 	cfg, err := config.Load(path)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			return config.DefaultConfig(), nil
 		}
 		return nil, fmt.Errorf("loading config from %s: %w", path, err)
@@ -141,7 +144,13 @@ func loadOrDefaultConfig(path string) (*config.Config, error) {
 }
 
 // saveConfig writes the config to the given path in TOML format.
+// It creates parent directories if they do not exist.
 func saveConfig(path string, cfg *config.Config) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return fmt.Errorf("creating config directory %s: %w", dir, err)
+	}
+
 	f, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("creating config file %s: %w", path, err)
