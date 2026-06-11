@@ -1,0 +1,1991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Runner House · A Local Build Dashboard</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet" />
+
+<style>
+  /* ── reset ─────────────────────────────────────── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+  button { font: inherit; cursor: pointer; border: none; background: none; }
+  a { text-decoration: none; color: inherit; }
+  body { font-family: 'Inter', system-ui, sans-serif; }
+
+  /* ── theater · tokens ──────────────────────────── */
+  :root {
+    --t-type-display:   clamp(42px, 6vw, 76px);
+    --t-type-h1:        clamp(36px, 5vw, 64px);
+    --t-type-h2:        22px;
+    --t-type-body-lg:   20px;
+    --t-type-body:      18px;
+    --t-type-meta:      14px;
+    --t-type-caps-md:   11px;
+    --t-type-caps-sm:   10px;
+
+    --t-track-eyebrow:  0.36em;
+    --t-track-meta:     0.22em;
+    --t-track-mono:     0.16em;
+
+    --t-space-1:  4px;   --t-space-2:  8px;   --t-space-3:  14px;
+    --t-space-4:  20px;  --t-space-5:  28px;  --t-space-6:  40px;
+    --t-space-7:  56px;  --t-space-8:  80px;
+
+    --t-w-wide: 1320px;
+    --t-radius-sm: 2px; --t-radius: 3px; --t-radius-md: 6px; --t-radius-pill: 999px;
+    --t-dur: 200ms; --t-dur-slow: 240ms; --t-ease: ease;
+  }
+
+  .theater-night {
+    --bg: #0E0C09;       --bg-deep: #060503;
+    --ink: #EDE6D6;      --ink-soft: #B8AE9A;  --muted: #6B6354;
+    --rule: #2A241D;     --rule-soft: #1d1812;
+    --accent: #C9A961;   --warning: #E07B59;
+    --hover-bg: rgba(255, 255, 255, 0.04);
+  }
+
+  .theater-night {
+    background: var(--bg); color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    position: relative; min-height: 100vh;
+  }
+  .theater-night::before {
+    content: ""; position: fixed; inset: 0;
+    pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 25%, rgba(201,169,97,0.05), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 50% 80%, rgba(80,60,40,0.08), transparent 70%);
+  }
+  .theater-night > * { position: relative; z-index: 1; }
+
+  /* ── theater · type ────────────────────────────── */
+  .t-wordmark {
+    font-family: 'Newsreader', serif; font-style: italic; font-weight: 400;
+    font-size: 22px; letter-spacing: 0.01em;
+    display: inline-flex; align-items: center; gap: 12px; color: var(--ink);
+  }
+  .t-wordmark::before {
+    content: ""; width: 6px; height: 6px; background: var(--accent); border-radius: 50%;
+    box-shadow: 0 0 12px rgba(201,169,97,0.6);
+  }
+
+  .t-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: var(--t-type-caps-md); letter-spacing: var(--t-track-eyebrow);
+    text-transform: uppercase; color: var(--accent); font-weight: 500;
+    display: flex; align-items: center; justify-content: center; gap: 14px; margin: 0;
+  }
+  .t-eyebrow::before, .t-eyebrow::after {
+    content: ""; height: 1px; background: var(--accent); opacity: 0.5;
+    width: 40px; flex: 0 0 auto;
+  }
+  .t-eyebrow--flex::before, .t-eyebrow--flex::after {
+    width: auto; flex: 1; min-width: 16px; opacity: 0.4;
+  }
+  .t-eyebrow--start { justify-content: flex-start; }
+  .t-eyebrow--start::before { display: none; }
+
+  .t-title {
+    font-family: 'Newsreader', serif; font-style: italic; font-weight: 400;
+    font-size: var(--t-type-h1); line-height: 1.05; letter-spacing: -0.02em;
+    color: var(--ink); margin: 0;
+  }
+  .t-title--display { font-size: var(--t-type-display); }
+  .t-title--md      { font-size: 44px; }
+  .t-title--sm      { font-size: 32px; }
+  .t-title--xs      { font-size: 24px; }
+
+  .t-sub {
+    font-family: 'Newsreader', serif; font-style: italic; font-weight: 400;
+    font-size: 16px; line-height: 1.4; color: var(--ink-soft); letter-spacing: 0.01em;
+  }
+  .t-sub--lg { font-size: var(--t-type-body-lg); }
+
+  .t-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: var(--t-type-caps-md); letter-spacing: var(--t-track-meta);
+    text-transform: uppercase; color: var(--ink-soft);
+  }
+  .t-meta--soft { color: var(--muted); }
+  .t-pip { margin: 0 8px; color: var(--accent); opacity: 0.5; }
+
+  .t-mono {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    color: var(--ink-soft); letter-spacing: 0.04em;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+
+  .t-rule { border-top: 1px solid var(--rule); }
+  .t-divider {
+    display: flex; align-items: center; justify-content: center;
+    gap: 14px; margin: var(--t-space-5) 0 var(--t-space-4);
+  }
+  .t-divider::before, .t-divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--rule);
+  }
+  .t-divider span {
+    font-family: 'Newsreader', serif; font-style: italic; font-size: 14px;
+    color: var(--muted); letter-spacing: 0.02em;
+  }
+
+  /* ── theater · controls ────────────────────────── */
+  .t-btn-secondary {
+    display: inline-block; font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 15px; padding: 7px 26px; border: 1px solid var(--rule);
+    background: transparent; color: var(--ink-soft);
+    border-radius: var(--t-radius-pill); letter-spacing: 0.01em; cursor: pointer;
+    transition: all var(--t-dur-slow) var(--t-ease); text-decoration: none; white-space: nowrap;
+  }
+  .t-btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .t-btn-ghost {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 15px; padding: 4px 10px;
+    background: transparent; color: var(--ink-soft);
+    border-radius: var(--t-radius); cursor: pointer;
+    transition: color var(--t-dur) var(--t-ease), background var(--t-dur) var(--t-ease);
+  }
+  .t-btn-ghost:hover { color: var(--accent); background: var(--hover-bg); }
+
+  .t-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px;
+    border: 1px solid var(--rule); border-radius: var(--t-radius-pill);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); cursor: pointer; background: transparent;
+    transition: all var(--t-dur) var(--t-ease);
+  }
+  .t-chip:hover { color: var(--ink); border-color: var(--ink-soft); }
+  .t-chip.is-active {
+    background: var(--accent); color: var(--bg); border-color: var(--accent);
+  }
+
+  .t-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 2px 9px;
+    border: 1px solid var(--rule);
+    border-radius: var(--t-radius-pill);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-soft); line-height: 1.6;
+  }
+  .t-badge--accent { color: var(--accent); border-color: var(--accent); }
+  .t-badge--warning { color: var(--warning); border-color: var(--warning); }
+  .t-badge--dot::before {
+    content: ""; width: 5px; height: 5px; border-radius: 50%;
+    background: currentColor; flex: 0 0 auto;
+  }
+  .t-badge--pulse::before {
+    content: ""; width: 5px; height: 5px; border-radius: 50%;
+    background: currentColor; flex: 0 0 auto;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+    50% { opacity: 0.5; box-shadow: 0 0 0 4px transparent; }
+  }
+
+  .t-progress {
+    width: 100%; height: 2px;
+    background: var(--rule); border-radius: 999px;
+    overflow: hidden; position: relative;
+  }
+  .t-progress__bar {
+    height: 100%; background: var(--accent);
+    transition: width var(--t-dur-slow) var(--t-ease);
+  }
+  .t-progress--warning .t-progress__bar { background: var(--warning); }
+
+  .t-table {
+    width: 100%; border-collapse: collapse;
+    font-family: 'Newsreader', serif; font-size: 15px; color: var(--ink);
+  }
+  .t-table thead th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--muted);
+    font-weight: 500; text-align: left;
+    padding: 10px var(--t-space-4);
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  .t-table tbody td {
+    padding: 12px var(--t-space-4);
+    border-bottom: 1px dotted var(--rule);
+    vertical-align: middle;
+  }
+  .t-table tbody tr:last-child td { border-bottom: 1px solid var(--rule); }
+  .t-table tbody tr { transition: background var(--t-dur) var(--t-ease); }
+  .t-table tbody tr:hover { background: var(--hover-bg); }
+  .t-table__title-cell { font-style: italic; color: var(--ink); }
+  .t-table__num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; color: var(--ink-soft);
+    text-align: right; letter-spacing: 0.04em;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+
+  .t-end {
+    font-family: 'Newsreader', serif; font-style: italic;
+    color: var(--accent); letter-spacing: 0.4em; font-size: 15px; opacity: 0.7;
+  }
+
+  /* ════════════════════════════════════════════════
+     RUNNER HOUSE — page composition
+     ════════════════════════════════════════════════ */
+
+  .rh-shell { width: 100%; }
+
+  /* ── header (top bar) ──────────────────────────── */
+  .rh-header {
+    border-bottom: 1px solid var(--rule);
+    padding: 14px var(--t-space-6);
+    background: rgba(14, 12, 9, 0.85);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .rh-header__inner {
+    max-width: var(--t-w-wide); margin: 0 auto;
+    display: flex; align-items: center; gap: var(--t-space-5);
+  }
+  .rh-header__brand { display: flex; align-items: center; gap: 18px; }
+  .rh-header__pip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .rh-header__nav { display: flex; gap: 4px; margin-left: var(--t-space-5); }
+  .rh-header__navlink {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: var(--t-track-meta);
+    text-transform: uppercase; color: var(--ink-soft);
+    padding: 6px 12px; border-radius: var(--t-radius);
+    transition: color var(--t-dur) var(--t-ease), background var(--t-dur) var(--t-ease);
+  }
+  .rh-header__navlink:hover { color: var(--ink); background: var(--hover-bg); }
+  .rh-header__navlink.is-active { color: var(--accent); background: var(--hover-bg); }
+  .rh-header__spacer { flex: 1; }
+  .rh-header__live {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: var(--t-track-meta);
+    text-transform: uppercase; color: var(--ink-soft);
+  }
+  .rh-header__live::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 8px var(--accent);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  .rh-header__time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted); letter-spacing: 0.1em;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+
+  /* ── page container ────────────────────────────── */
+  .rh-main {
+    max-width: var(--t-w-wide); margin: 0 auto;
+    padding: var(--t-space-7) var(--t-space-6) var(--t-space-8);
+  }
+
+  /* ── hero (curtain up) ─────────────────────────── */
+  .rh-hero {
+    text-align: center;
+    padding: 0 0 var(--t-space-7);
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: var(--t-space-7);
+  }
+  .rh-hero .t-eyebrow { margin-bottom: var(--t-space-4); }
+  .rh-hero__sub {
+    margin-top: var(--t-space-4);
+    font-family: 'Newsreader', serif; font-style: italic;
+    color: var(--ink-soft); font-size: 19px; line-height: 1.4;
+    max-width: 540px; margin-left: auto; margin-right: auto;
+  }
+
+  .rh-hero__bill {
+    margin-top: var(--t-space-6);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    max-width: 920px;
+    margin-left: auto; margin-right: auto;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .rh-hero__cell {
+    padding: var(--t-space-4) var(--t-space-3);
+    text-align: center;
+    border-right: 1px dotted var(--rule);
+  }
+  .rh-hero__cell:last-child { border-right: none; }
+  .rh-hero__cell-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .rh-hero__cell-value {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 28px; color: var(--ink); line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .rh-hero__cell-value--warn { color: var(--warning); }
+  .rh-hero__cell-value--mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal; font-size: 22px; letter-spacing: 0.02em;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+
+  /* ── section ───────────────────────────────────── */
+  .rh-section {
+    margin-bottom: var(--t-space-8);
+  }
+  .rh-section__head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: var(--t-space-5); margin-bottom: var(--t-space-5);
+    flex-wrap: wrap;
+  }
+  .rh-section__head-text { flex: 1; min-width: 280px; }
+  .rh-section__eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: var(--t-track-eyebrow);
+    text-transform: uppercase; color: var(--accent);
+    font-weight: 500; margin-bottom: 10px;
+    display: inline-flex; align-items: center; gap: 14px;
+  }
+  .rh-section__eyebrow::before {
+    content: ""; width: 28px; height: 1px; background: var(--accent); opacity: 0.6;
+  }
+  .rh-section__title {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 36px; color: var(--ink); line-height: 1.1; letter-spacing: -0.01em;
+  }
+  .rh-section__sub {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 16px; color: var(--ink-soft); margin-top: 6px;
+    max-width: 560px; line-height: 1.4;
+  }
+  .rh-section__tools {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+
+  /* ── runner cards (the ensemble) ───────────────── */
+  .rh-ensemble {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--t-space-3);
+  }
+
+  .rh-runner {
+    border: 1px solid var(--rule); border-radius: var(--t-radius-md);
+    background: var(--bg);
+    padding: var(--t-space-4);
+    display: flex; flex-direction: column; gap: var(--t-space-3);
+    position: relative;
+    transition: border-color var(--t-dur) var(--t-ease);
+  }
+  .rh-runner:hover { border-color: var(--ink-soft); }
+  .rh-runner--stuck {
+    border-color: var(--warning);
+    box-shadow:
+      inset 0 0 0 1px rgba(224, 123, 89, 0.2),
+      0 0 24px -8px rgba(224, 123, 89, 0.4);
+  }
+  .rh-runner--stuck::before {
+    content: ""; position: absolute; inset: 0;
+    border-radius: var(--t-radius-md);
+    pointer-events: none;
+    box-shadow: inset 4px 0 0 var(--warning);
+  }
+  .rh-runner--idle {
+    background: rgba(255,255,255,0.015);
+    border-style: dashed;
+  }
+  .rh-runner--idle .rh-runner__name { color: var(--muted); }
+
+  .rh-runner__head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--t-space-2);
+  }
+  .rh-runner__status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .rh-runner__status::before {
+    content: ""; width: 5px; height: 5px; border-radius: 50%;
+    background: currentColor;
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  .rh-runner--stuck .rh-runner__status { color: var(--warning); }
+  .rh-runner--stuck .rh-runner__status::before { animation-duration: 0.8s; }
+  .rh-runner--idle .rh-runner__status { color: var(--muted); }
+  .rh-runner--idle .rh-runner__status::before { background: var(--muted); animation: none; }
+  .rh-runner__num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.16em; color: var(--muted);
+  }
+
+  .rh-runner__name {
+    font-family: 'Newsreader', serif; font-style: italic; font-weight: 400;
+    font-size: 24px; color: var(--ink); line-height: 1; letter-spacing: -0.01em;
+  }
+  .rh-runner--stuck .rh-runner__name { color: var(--warning); }
+  .rh-runner__job {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 14px; color: var(--ink-soft); line-height: 1.35;
+  }
+  .rh-runner__job code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-style: normal; color: var(--accent); letter-spacing: 0.02em;
+  }
+
+  .rh-runner__sep {
+    height: 1px; background: var(--rule);
+    margin: 2px -2px;
+  }
+  .rh-runner__sep--dotted {
+    background: none; border-top: 1px dotted var(--rule);
+  }
+
+  .rh-runner__stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: var(--t-space-3) var(--t-space-4);
+  }
+  .rh-runner__stat {
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .rh-runner__stat-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .rh-runner__stat-val {
+    color: var(--ink-soft); font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
+  }
+  .rh-runner--stuck .rh-runner__stat-val--cpu { color: var(--warning); }
+
+  .rh-runner__foot {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .rh-runner__foot strong {
+    color: var(--ink-soft); font-weight: 500;
+    letter-spacing: 0.04em; text-transform: none;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+  .rh-runner--stuck .rh-runner__foot strong { color: var(--warning); }
+  .rh-runner__restarts-many { color: var(--warning) !important; }
+
+  /* ── two-column row ────────────────────────────── */
+  .rh-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: var(--t-space-4);
+    margin-bottom: var(--t-space-8);
+  }
+  .rh-row--equal { grid-template-columns: 1fr 1fr; }
+
+  /* ── panel (the standard surface) ──────────────── */
+  .rh-panel {
+    border: 1px solid var(--rule); border-radius: var(--t-radius-md);
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .rh-panel__head {
+    padding: var(--t-space-3) var(--t-space-4);
+    border-bottom: 1px solid var(--rule);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--t-space-3); min-height: 48px;
+  }
+  .rh-panel__head-title {
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+  }
+  .rh-panel__title-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: var(--t-track-meta);
+    text-transform: uppercase; color: var(--ink-soft);
+  }
+  .rh-panel__title-it {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 17px; color: var(--ink);
+  }
+  .rh-panel__tools {
+    display: flex; align-items: center; gap: 4px;
+  }
+  .rh-panel__body {
+    flex: 1; padding: var(--t-space-4) var(--t-space-4) var(--t-space-5);
+    display: flex; flex-direction: column; gap: var(--t-space-4);
+  }
+  .rh-panel__body--flush { padding: 0; }
+
+  /* ── queue (in the wings) ──────────────────────── */
+  .rh-queue {
+    display: grid; grid-template-columns: 1fr; gap: var(--t-space-4);
+  }
+  .rh-queue__top {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: var(--t-space-5); align-items: center;
+    padding: var(--t-space-3) var(--t-space-4);
+    border: 1px solid var(--rule); border-radius: var(--t-radius);
+    background: rgba(255,255,255,0.015);
+  }
+  .rh-queue__big {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .rh-queue__big-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .rh-queue__big-value {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 38px; color: var(--warning); line-height: 1; letter-spacing: -0.01em;
+  }
+  .rh-queue__big-note {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 13px; color: var(--ink-soft); margin-top: 4px;
+  }
+  .rh-queue__big-note code {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal; font-size: 11px; color: var(--accent);
+  }
+  .rh-queue__chip {
+    align-self: start;
+  }
+
+  .rh-chart {
+    width: 100%; display: block;
+  }
+  .rh-chart-frame {
+    border: 1px solid var(--rule); border-radius: var(--t-radius);
+    padding: var(--t-space-3) var(--t-space-3) var(--t-space-2);
+    background: var(--bg-deep);
+  }
+  .rh-chart-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .rh-chart-legend {
+    display: inline-flex; gap: 14px; align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .rh-chart-legend__item { display: inline-flex; align-items: center; gap: 6px; }
+  .rh-chart-legend__swatch {
+    display: inline-block; width: 10px; height: 2px; background: var(--accent);
+  }
+
+  /* histogram ticks */
+  .rh-hist__axis {
+    display: grid; grid-template-columns: repeat(8, 1fr);
+    gap: 4px; margin-top: 6px;
+  }
+  .rh-hist__tick {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--muted); letter-spacing: 0.06em;
+    text-align: center;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+
+  /* ── cache (the wardrobe) ──────────────────────── */
+  .rh-wardrobe {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--rule);
+    border-left: 1px solid var(--rule);
+  }
+  .rh-wardrobe__cell {
+    padding: var(--t-space-4);
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    display: flex; flex-direction: column; gap: var(--t-space-2);
+    background: var(--bg);
+  }
+  .rh-wardrobe__cell-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: var(--t-space-2);
+  }
+  .rh-wardrobe__name {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 18px; color: var(--ink); letter-spacing: -0.01em;
+  }
+  .rh-wardrobe__rate {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px; color: var(--accent); letter-spacing: 0.02em;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+  .rh-wardrobe__rate--warn { color: var(--warning); }
+  .rh-wardrobe__rate-suffix {
+    font-size: 13px; color: var(--muted); margin-left: 2px;
+  }
+  .rh-wardrobe__meta {
+    display: flex; gap: var(--t-space-3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .rh-wardrobe__delta--down { color: var(--warning); }
+  .rh-wardrobe__delta--up { color: var(--accent); }
+  .rh-wardrobe__spark { width: 100%; height: 28px; margin-top: 4px; }
+
+  /* ── programme (flame chart) ───────────────────── */
+  .rh-programme {
+    padding: var(--t-space-4);
+    background: var(--bg-deep);
+    border-top: 1px solid var(--rule);
+  }
+  .rh-programme__scale {
+    position: relative;
+    height: 22px;
+    margin-bottom: var(--t-space-3);
+    border-bottom: 1px solid var(--rule);
+  }
+  .rh-programme__tick {
+    position: absolute; top: 0; bottom: 0;
+    width: 1px; background: var(--rule); opacity: 0.6;
+  }
+  .rh-programme__tick-label {
+    position: absolute; top: 0;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.18em;
+    color: var(--muted); padding-left: 0;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+  .rh-programme__rows { display: flex; flex-direction: column; gap: 5px; }
+  .rh-programme__row {
+    display: grid;
+    grid-template-columns: 200px 1fr 90px;
+    align-items: center; gap: var(--t-space-3);
+    padding: 2px 0;
+    border-radius: var(--t-radius-sm);
+    transition: background var(--t-dur) var(--t-ease);
+  }
+  .rh-programme__row:hover { background: var(--hover-bg); }
+  .rh-programme__label {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 14px; color: var(--ink-soft);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .rh-programme__label code {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal; font-size: 11px; color: var(--muted);
+    letter-spacing: 0.02em; margin-right: 6px;
+  }
+  .rh-programme__track {
+    position: relative; height: 22px;
+  }
+  .rh-programme__bar {
+    position: absolute; top: 2px; bottom: 2px;
+    background: var(--accent); opacity: 0.55;
+    border-radius: 2px;
+    transition: opacity var(--t-dur) var(--t-ease);
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .rh-programme__bar:hover { opacity: 0.85; }
+  .rh-programme__bar--outlier {
+    background: var(--warning); opacity: 0.7;
+  }
+  .rh-programme__bar-inner {
+    position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.12em;
+    color: var(--bg); text-transform: uppercase;
+    white-space: nowrap; pointer-events: none;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+  .rh-programme__dur {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-soft); letter-spacing: 0.02em;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+  .rh-programme__row--outlier .rh-programme__dur { color: var(--warning); }
+  .rh-programme__row--outlier .rh-programme__label { color: var(--warning); font-weight: 500; }
+
+  .rh-programme__tooltip {
+    position: absolute;
+    padding: 6px 10px;
+    background: var(--ink); color: var(--bg);
+    border-radius: var(--t-radius-sm);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.18em;
+    text-transform: uppercase; line-height: 1.5;
+    white-space: nowrap;
+    box-shadow: 0 8px 20px -8px rgba(0,0,0,0.6);
+    z-index: 5;
+  }
+  .rh-programme__tooltip::after {
+    content: ""; position: absolute;
+    bottom: -4px; left: 24px;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid var(--ink);
+  }
+
+  /* ── network (the wires) ───────────────────────── */
+  .rh-net__chart {
+    border: 1px solid var(--rule); border-radius: var(--t-radius);
+    background: var(--bg-deep);
+    padding: var(--t-space-3);
+  }
+  .rh-net__sockets {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid var(--rule); border-radius: var(--t-radius);
+    overflow: hidden;
+  }
+  .rh-net__socket {
+    padding: var(--t-space-3) var(--t-space-4);
+    border-right: 1px solid var(--rule);
+    background: var(--bg);
+  }
+  .rh-net__socket:last-child { border-right: none; }
+  .rh-net__socket-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .rh-net__socket-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px; color: var(--ink); letter-spacing: 0.02em;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+  .rh-net__socket-val--warn { color: var(--warning); }
+  .rh-net__socket-bar {
+    width: 100%; height: 3px; background: var(--rule);
+    margin-top: 8px; border-radius: 999px; overflow: hidden;
+  }
+  .rh-net__socket-bar-fill { height: 100%; background: var(--accent); }
+  .rh-net__socket-bar-fill--warn { background: var(--warning); }
+
+  /* ── faults (notes) ────────────────────────────── */
+  .rh-faults__row td {
+    border-bottom: 1px dotted var(--rule);
+  }
+  .rh-faults__count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 28px; height: 24px; padding: 0 8px;
+    border: 1px solid var(--warning); border-radius: var(--t-radius-pill);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--warning); letter-spacing: 0.04em;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+  .rh-faults__count--mild {
+    border-color: var(--accent); color: var(--accent);
+  }
+  .rh-faults__step {
+    font-family: 'Newsreader', serif; font-style: italic;
+    color: var(--ink); font-size: 15px;
+  }
+  .rh-faults__step code {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal; font-size: 11px; color: var(--muted);
+    letter-spacing: 0.02em; margin-left: 6px;
+  }
+  .rh-faults__error {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-soft); letter-spacing: 0.02em;
+    line-height: 1.4;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    max-width: 320px; display: block;
+  }
+  .rh-faults__pat-cluster { color: var(--warning); }
+  .rh-faults__pat-flake { color: var(--ink-soft); }
+  .rh-faults__runners {
+    display: inline-flex; gap: 4px; flex-wrap: wrap;
+  }
+  .rh-faults__runner-pip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.04em; color: var(--muted);
+    padding: 1px 6px; border: 1px solid var(--rule); border-radius: 2px;
+  }
+
+  /* ── house account (cost) ──────────────────────── */
+  .rh-house {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 0;
+  }
+  .rh-house__col {
+    padding: var(--t-space-4) var(--t-space-5);
+    border-right: 1px solid var(--rule);
+  }
+  .rh-house__col:last-child { border-right: none; }
+  .rh-house__col-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: var(--t-space-3);
+  }
+  .rh-house__col-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .rh-house__col-total {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 22px; color: var(--ink); letter-spacing: -0.01em;
+  }
+  .rh-house__list {
+    list-style: none; display: flex; flex-direction: column;
+  }
+  .rh-house__row {
+    display: grid;
+    grid-template-columns: 1fr 60px 80px;
+    align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--rule);
+  }
+  .rh-house__row:last-child { border-bottom: none; }
+  .rh-house__row-name {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 14px; color: var(--ink-soft);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .rh-house__row-bar {
+    height: 4px; background: var(--rule); border-radius: 999px; overflow: hidden;
+  }
+  .rh-house__row-bar-fill { height: 100%; background: var(--accent); }
+  .rh-house__row-val {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-soft); letter-spacing: 0.02em;
+    font-feature-settings: "tnum"; font-variant-numeric: tabular-nums;
+  }
+
+  .rh-house__bars {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 6px; align-items: end;
+    height: 130px;
+    padding: 8px 0;
+  }
+  .rh-house__bar {
+    background: var(--accent); opacity: 0.6;
+    border-radius: 2px 2px 0 0;
+    position: relative;
+    transition: opacity var(--t-dur) var(--t-ease);
+    min-height: 4px;
+  }
+  .rh-house__bar:hover { opacity: 1; }
+  .rh-house__bar--today { opacity: 1; box-shadow: 0 0 12px -2px var(--accent); }
+  .rh-house__bar-label {
+    position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--muted); letter-spacing: 0.06em;
+  }
+  .rh-house__bars-frame {
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 26px;
+  }
+
+  /* ── footer ────────────────────────────────────── */
+  .rh-foot {
+    text-align: center;
+    padding: var(--t-space-7) var(--t-space-6) var(--t-space-7);
+    border-top: 1px solid var(--rule);
+    margin-top: var(--t-space-7);
+  }
+  .rh-foot__end { margin-bottom: 18px; }
+  .rh-foot__line {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: var(--t-type-caps-sm); letter-spacing: var(--t-track-meta);
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  /* ── responsive ────────────────────────────────── */
+  @media (max-width: 1100px) {
+    .rh-ensemble { grid-template-columns: repeat(3, 1fr); }
+    .rh-row { grid-template-columns: 1fr; }
+    .rh-house { grid-template-columns: 1fr; }
+    .rh-house__col { border-right: none; border-bottom: 1px solid var(--rule); }
+    .rh-house__col:last-child { border-bottom: none; }
+  }
+  @media (max-width: 760px) {
+    .rh-ensemble { grid-template-columns: repeat(2, 1fr); }
+    .rh-hero__bill { grid-template-columns: repeat(2, 1fr); }
+    .rh-hero__cell { border-right: none; border-bottom: 1px dotted var(--rule); }
+    .rh-programme__row { grid-template-columns: 130px 1fr 70px; }
+    .rh-wardrobe { grid-template-columns: 1fr; }
+  }
+</style>
+
+</head>
+<body class="theater-night">
+<div class="rh-shell">
+
+  <!-- ── HEADER ──────────────────────────────────── -->
+  <header class="rh-header">
+    <div class="rh-header__inner">
+      <div class="rh-header__brand">
+        <span class="t-wordmark">Runner House</span>
+        <span class="rh-header__pip">est. spruce · h12o.io</span>
+      </div>
+      <nav class="rh-header__nav">
+        <a class="rh-header__navlink is-active" href="#">Tonight</a>
+        <a class="rh-header__navlink" href="#">Past Runs</a>
+        <a class="rh-header__navlink" href="#">Workflows</a>
+        <a class="rh-header__navlink" href="#">Settings</a>
+      </nav>
+      <div class="rh-header__spacer"></div>
+      <span class="rh-header__time">Tue · 14:32:08 EST</span>
+      <span class="rh-header__live">Live · 1s tick</span>
+    </div>
+  </header>
+
+  <main class="rh-main">
+
+    <!-- ── HERO · curtain up ──────────────────────── -->
+    <section class="rh-hero">
+      <div class="t-eyebrow">Currently Running</div>
+      <h1 class="t-title t-title--md" style="margin-top: 14px;">Eleven runners on the boards.</h1>
+      <p class="rh-hero__sub">One stuck on <em>setup-bun</em>. Queue depth has been climbing since 14:18 — pickup latency drifting. Rest of the house is steady.</p>
+
+      <div class="rh-hero__bill">
+        <div class="rh-hero__cell">
+          <div class="rh-hero__cell-label">In Performance</div>
+          <div class="rh-hero__cell-value">Eleven</div>
+        </div>
+        <div class="rh-hero__cell">
+          <div class="rh-hero__cell-label">Off-Stage</div>
+          <div class="rh-hero__cell-value">One</div>
+        </div>
+        <div class="rh-hero__cell">
+          <div class="rh-hero__cell-label">Missed Cue</div>
+          <div class="rh-hero__cell-value rh-hero__cell-value--warn">One</div>
+        </div>
+        <div class="rh-hero__cell">
+          <div class="rh-hero__cell-label">Queue Depth</div>
+          <div class="rh-hero__cell-value rh-hero__cell-value--mono">14</div>
+        </div>
+        <div class="rh-hero__cell">
+          <div class="rh-hero__cell-label">Oldest Wait</div>
+          <div class="rh-hero__cell-value rh-hero__cell-value--mono">3:47</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── §1 · ENSEMBLE (runner pool) ────────────── -->
+    <section class="rh-section">
+      <div class="rh-section__head">
+        <div class="rh-section__head-text">
+          <div class="rh-section__eyebrow">§ I · Runner Pool · Twelve Players</div>
+          <h2 class="rh-section__title">The Ensemble</h2>
+          <p class="rh-section__sub">Live snapshot of the cast. A card lights warning when CPU has been pinned at zero for more than two minutes — the tell for a stuck runner.</p>
+        </div>
+        <div class="rh-section__tools">
+          <button class="t-chip is-active">All</button>
+          <button class="t-chip">Performing</button>
+          <button class="t-chip">Stuck</button>
+          <button class="t-chip">Off-Stage</button>
+          <span style="width: 8px;"></span>
+          <button class="t-btn-secondary">Restart Stuck</button>
+        </div>
+      </div>
+
+      <div class="rh-ensemble">
+
+        <!-- runner 01 — performing -->
+        <article class="rh-runner">
+          <div class="rh-runner__head">
+            <span class="rh-runner__status">In Performance</span>
+            <span class="rh-runner__num">01</span>
+          </div>
+          <h3 class="rh-runner__name">runner-01</h3>
+          <p class="rh-runner__job">teachmehipaa · build · <code>steps/install-deps</code></p>
+          <div class="rh-runner__sep"></div>
+          <div class="rh-runner__stats">
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>CPU</span><span class="rh-runner__stat-val">82%</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 82%;"></div></div>
+            </div>
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>MEM</span><span class="rh-runner__stat-val">2.1G</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 56%;"></div></div>
+            </div>
+          </div>
+          <div class="rh-runner__sep rh-runner__sep--dotted"></div>
+          <div class="rh-runner__foot">
+            <span>runtime · <strong>0:42</strong></span>
+            <span>↻ <strong>0</strong></span>
+          </div>
+        </article>
+
+        <!-- runner 02 — performing -->
+        <article class="rh-runner">
+          <div class="rh-runner__head">
+            <span class="rh-runner__status">In Performance</span>
+            <span class="rh-runner__num">02</span>
+          </div>
+          <h3 class="rh-runner__name">runner-02</h3>
+          <p class="rh-runner__job">osmosis · test · <code>jest --shard=2/4</code></p>
+          <div class="rh-runner__sep"></div>
+          <div class="rh-runner__stats">
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>CPU</span><span class="rh-runner__stat-val">94%</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 94%;"></div></div>
+            </div>
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>MEM</span><span class="rh-runner__stat-val">3.4G</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 71%;"></div></div>
+            </div>
+          </div>
+          <div class="rh-runner__sep rh-runner__sep--dotted"></div>
+          <div class="rh-runner__foot">
+            <span>runtime · <strong>4:18</strong></span>
+            <span>↻ <strong>0</strong></span>
+          </div>
+        </article>
+
+        <!-- runner 03 — performing -->
+        <article class="rh-runner">
+          <div class="rh-runner__head">
+            <span class="rh-runner__status">In Performance</span>
+            <span class="rh-runner__num">03</span>
+          </div>
+          <h3 class="rh-runner__name">runner-03</h3>
+          <p class="rh-runner__job">signal-engine · build · <code>tsc --build</code></p>
+          <div class="rh-runner__sep"></div>
+          <div class="rh-runner__stats">
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>CPU</span><span class="rh-runner__stat-val">61%</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 61%;"></div></div>
+            </div>
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>MEM</span><span class="rh-runner__stat-val">1.8G</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 48%;"></div></div>
+            </div>
+          </div>
+          <div class="rh-runner__sep rh-runner__sep--dotted"></div>
+          <div class="rh-runner__foot">
+            <span>runtime · <strong>2:04</strong></span>
+            <span>↻ <strong>0</strong></span>
+          </div>
+        </article>
+
+        <!-- runner 04 — STUCK -->
+        <article class="rh-runner rh-runner--stuck">
+          <div class="rh-runner__head">
+            <span class="rh-runner__status">Missed Cue</span>
+            <span class="rh-runner__num">04</span>
+          </div>
+          <h3 class="rh-runner__name">runner-04</h3>
+          <p class="rh-runner__job">teachmehipaa · build · <code>steps/setup-bun</code></p>
+          <div class="rh-runner__sep"></div>
+          <div class="rh-runner__stats">
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>CPU</span><span class="rh-runner__stat-val rh-runner__stat-val--cpu">0%</span></div>
+              <div class="t-progress t-progress--warning"><div class="t-progress__bar" style="width: 1%;"></div></div>
+            </div>
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>MEM</span><span class="rh-runner__stat-val">1.2G</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 31%;"></div></div>
+            </div>
+          </div>
+          <div class="rh-runner__sep rh-runner__sep--dotted"></div>
+          <div class="rh-runner__foot">
+            <span>stuck for · <strong>3:14</strong></span>
+            <span>↻ <strong class="rh-runner__restarts-many">5</strong></span>
+          </div>
+        </article>
+
+        <!-- runner 05 — performing -->
+        <article class="rh-runner">
+          <div class="rh-runner__head">
+            <span class="rh-runner__status">In Performance</span>
+            <span class="rh-runner__num">05</span>
+          </div>
+          <h3 class="rh-runner__name">runner-05</h3>
+          <p class="rh-runner__job">teachmehipaa · build · <code>steps/install-deps</code></p>
+          <div class="rh-runner__sep"></div>
+          <div class="rh-runner__stats">
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>CPU</span><span class="rh-runner__stat-val">73%</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 73%;"></div></div>
+            </div>
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>MEM</span><span class="rh-runner__stat-val">2.3G</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 58%;"></div></div>
+            </div>
+          </div>
+          <div class="rh-runner__sep rh-runner__sep--dotted"></div>
+          <div class="rh-runner__foot">
+            <span>runtime · <strong>1:08</strong></span>
+            <span>↻ <strong>0</strong></span>
+          </div>
+        </article>
+
+        <!-- runner 06 — performing -->
+        <article class="rh-runner">
+          <div class="rh-runner__head">
+            <span class="rh-runner__status">In Performance</span>
+            <span class="rh-runner__num">06</span>
+          </div>
+          <h3 class="rh-runner__name">runner-06</h3>
+          <p class="rh-runner__job">openclaw · lint · <code>eslint .</code></p>
+          <div class="rh-runner__sep"></div>
+          <div class="rh-runner__stats">
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>CPU</span><span class="rh-runner__stat-val">44%</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 44%;"></div></div>
+            </div>
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>MEM</span><span class="rh-runner__stat-val">0.9G</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 22%;"></div></div>
+            </div>
+          </div>
+          <div class="rh-runner__sep rh-runner__sep--dotted"></div>
+          <div class="rh-runner__foot">
+            <span>runtime · <strong>0:24</strong></span>
+            <span>↻ <strong>0</strong></span>
+          </div>
+        </article>
+
+        <!-- runner 07 — performing -->
+        <article class="rh-runner">
+          <div class="rh-runner__head">
+            <span class="rh-runner__status">In Performance</span>
+            <span class="rh-runner__num">07</span>
+          </div>
+          <h3 class="rh-runner__name">runner-07</h3>
+          <p class="rh-runner__job">teachmehipaa · test · <code>vitest --shard=1/3</code></p>
+          <div class="rh-runner__sep"></div>
+          <div class="rh-runner__stats">
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>CPU</span><span class="rh-runner__stat-val">88%</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 88%;"></div></div>
+            </div>
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>MEM</span><span class="rh-runner__stat-val">2.7G</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 64%;"></div></div>
+            </div>
+          </div>
+          <div class="rh-runner__sep rh-runner__sep--dotted"></div>
+          <div class="rh-runner__foot">
+            <span>runtime · <strong>5:42</strong></span>
+            <span>↻ <strong>0</strong></span>
+          </div>
+        </article>
+
+        <!-- runner 08 — performing -->
+        <article class="rh-runner">
+          <div class="rh-runner__head">
+            <span class="rh-runner__status">In Performance</span>
+            <span class="rh-runner__num">08</span>
+          </div>
+          <h3 class="rh-runner__name">runner-08</h3>
+          <p class="rh-runner__job">truvoice · test · <code>cargo test</code></p>
+          <div class="rh-runner__sep"></div>
+          <div class="rh-runner__stats">
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>CPU</span><span class="rh-runner__stat-val">97%</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 97%;"></div></div>
+            </div>
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>MEM</span><span class="rh-runner__stat-val">1.4G</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 35%;"></div></div>
+            </div>
+          </div>
+          <div class="rh-runner__sep rh-runner__sep--dotted"></div>
+          <div class="rh-runner__foot">
+            <span>runtime · <strong>2:51</strong></span>
+            <span>↻ <strong>0</strong></span>
+          </div>
+        </article>
+
+        <!-- runner 09 — performing -->
+        <article class="rh-runner">
+          <div class="rh-runner__head">
+            <span class="rh-runner__status">In Performance</span>
+            <span class="rh-runner__num">09</span>
+          </div>
+          <h3 class="rh-runner__name">runner-09</h3>
+          <p class="rh-runner__job">teachmehipaa · test · <code>vitest --shard=2/3</code></p>
+          <div class="rh-runner__sep"></div>
+          <div class="rh-runner__stats">
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>CPU</span><span class="rh-runner__stat-val">79%</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 79%;"></div></div>
+            </div>
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>MEM</span><span class="rh-runner__stat-val">2.5G</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 61%;"></div></div>
+            </div>
+          </div>
+          <div class="rh-runner__sep rh-runner__sep--dotted"></div>
+          <div class="rh-runner__foot">
+            <span>runtime · <strong>5:18</strong></span>
+            <span>↻ <strong>1</strong></span>
+          </div>
+        </article>
+
+        <!-- runner 10 — performing -->
+        <article class="rh-runner">
+          <div class="rh-runner__head">
+            <span class="rh-runner__status">In Performance</span>
+            <span class="rh-runner__num">10</span>
+          </div>
+          <h3 class="rh-runner__name">runner-10</h3>
+          <p class="rh-runner__job">fizzpop · build · <code>vite build</code></p>
+          <div class="rh-runner__sep"></div>
+          <div class="rh-runner__stats">
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>CPU</span><span class="rh-runner__stat-val">52%</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 52%;"></div></div>
+            </div>
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>MEM</span><span class="rh-runner__stat-val">1.1G</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 28%;"></div></div>
+            </div>
+          </div>
+          <div class="rh-runner__sep rh-runner__sep--dotted"></div>
+          <div class="rh-runner__foot">
+            <span>runtime · <strong>0:18</strong></span>
+            <span>↻ <strong>0</strong></span>
+          </div>
+        </article>
+
+        <!-- runner 11 — performing -->
+        <article class="rh-runner">
+          <div class="rh-runner__head">
+            <span class="rh-runner__status">In Performance</span>
+            <span class="rh-runner__num">11</span>
+          </div>
+          <h3 class="rh-runner__name">runner-11</h3>
+          <p class="rh-runner__job">teachmehipaa · test · <code>vitest --shard=3/3</code></p>
+          <div class="rh-runner__sep"></div>
+          <div class="rh-runner__stats">
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>CPU</span><span class="rh-runner__stat-val">85%</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 85%;"></div></div>
+            </div>
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>MEM</span><span class="rh-runner__stat-val">2.6G</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 62%;"></div></div>
+            </div>
+          </div>
+          <div class="rh-runner__sep rh-runner__sep--dotted"></div>
+          <div class="rh-runner__foot">
+            <span>runtime · <strong>4:51</strong></span>
+            <span>↻ <strong>0</strong></span>
+          </div>
+        </article>
+
+        <!-- runner 12 — idle -->
+        <article class="rh-runner rh-runner--idle">
+          <div class="rh-runner__head">
+            <span class="rh-runner__status">Off-Stage</span>
+            <span class="rh-runner__num">12</span>
+          </div>
+          <h3 class="rh-runner__name">runner-12</h3>
+          <p class="rh-runner__job"><em>idle · awaiting cue</em></p>
+          <div class="rh-runner__sep"></div>
+          <div class="rh-runner__stats">
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>CPU</span><span class="rh-runner__stat-val">2%</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 2%;"></div></div>
+            </div>
+            <div class="rh-runner__stat">
+              <div class="rh-runner__stat-head"><span>MEM</span><span class="rh-runner__stat-val">0.4G</span></div>
+              <div class="t-progress"><div class="t-progress__bar" style="width: 9%;"></div></div>
+            </div>
+          </div>
+          <div class="rh-runner__sep rh-runner__sep--dotted"></div>
+          <div class="rh-runner__foot">
+            <span>idle for · <strong>14:22</strong></span>
+            <span>↻ <strong>0</strong></span>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ── §2 + §4 · QUEUE + WARDROBE row ─────────── -->
+    <div class="rh-row">
+
+      <!-- §2 · IN THE WINGS (queue + latency) -->
+      <article class="rh-panel">
+        <header class="rh-panel__head">
+          <div class="rh-panel__head-title">
+            <span class="rh-panel__title-mono">§ II · Queue · Latency</span>
+            <span class="rh-panel__title-it">In the Wings</span>
+          </div>
+          <div class="rh-panel__tools">
+            <button class="t-btn-ghost">5m</button>
+            <button class="t-btn-ghost" style="color: var(--accent);">15m</button>
+            <button class="t-btn-ghost">1h</button>
+          </div>
+        </header>
+
+        <div class="rh-panel__body">
+
+          <!-- Big number -->
+          <div class="rh-queue__top">
+            <div class="rh-queue__big">
+              <div class="rh-queue__big-label">Oldest Wait</div>
+              <div class="rh-queue__big-value">3:47</div>
+              <div class="rh-queue__big-note">queued at 14:28:21 · workflow <code>teachmehipaa.ci</code></div>
+            </div>
+            <div>
+              <span class="t-badge t-badge--warning t-badge--pulse">Stuck-Busy</span>
+            </div>
+          </div>
+
+          <!-- Queue depth chart -->
+          <div class="rh-chart-frame">
+            <div class="rh-chart-head">
+              <span>Queue Depth · 15m</span>
+              <span class="rh-chart-legend">
+                <span class="rh-chart-legend__item"><span class="rh-chart-legend__swatch"></span>jobs queued</span>
+              </span>
+            </div>
+            <svg class="rh-chart" viewBox="0 0 600 100" preserveAspectRatio="none" style="height: 90px;">
+              <defs>
+                <linearGradient id="qfill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#C9A961" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#C9A961" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- gridlines -->
+              <line x1="0" y1="25" x2="600" y2="25" stroke="#2A241D" stroke-width="1" stroke-dasharray="2 4"/>
+              <line x1="0" y1="50" x2="600" y2="50" stroke="#2A241D" stroke-width="1" stroke-dasharray="2 4"/>
+              <line x1="0" y1="75" x2="600" y2="75" stroke="#2A241D" stroke-width="1" stroke-dasharray="2 4"/>
+              <!-- area fill -->
+              <path d="M0,82 L24,80 L48,78 L72,75 L96,76 L120,72 L144,68 L168,65 L192,62 L216,58 L240,52 L264,48 L288,42 L312,38 L336,32 L360,28 L384,24 L408,20 L432,18 L456,15 L480,14 L504,12 L528,10 L552,8 L576,6 L600,5 L600,100 L0,100 Z" fill="url(#qfill)"/>
+              <!-- line -->
+              <path d="M0,82 L24,80 L48,78 L72,75 L96,76 L120,72 L144,68 L168,65 L192,62 L216,58 L240,52 L264,48 L288,42 L312,38 L336,32 L360,28 L384,24 L408,20 L432,18 L456,15 L480,14 L504,12 L528,10 L552,8 L576,6 L600,5" fill="none" stroke="#C9A961" stroke-width="1.5"/>
+              <!-- now marker -->
+              <circle cx="600" cy="5" r="3" fill="#C9A961"/>
+              <circle cx="600" cy="5" r="6" fill="none" stroke="#C9A961" stroke-width="1" opacity="0.4"/>
+              <!-- y-axis labels -->
+              <text x="4" y="14" font-family="JetBrains Mono" font-size="9" fill="#6B6354" letter-spacing="1">20</text>
+              <text x="4" y="54" font-family="JetBrains Mono" font-size="9" fill="#6B6354" letter-spacing="1">10</text>
+              <text x="4" y="94" font-family="JetBrains Mono" font-size="9" fill="#6B6354" letter-spacing="1">0</text>
+            </svg>
+            <div style="display: flex; justify-content: space-between; padding: 4px 4px 0; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.06em;">
+              <span>14:17</span><span>14:22</span><span>14:27</span><span>14:32 · now</span>
+            </div>
+          </div>
+
+          <!-- Histogram -->
+          <div class="rh-chart-frame">
+            <div class="rh-chart-head">
+              <span>Time-to-Pickup · last 200 jobs</span>
+              <span class="rh-chart-legend">p50 · 4.2s &nbsp; · &nbsp; p95 · 47s</span>
+            </div>
+            <svg class="rh-chart" viewBox="0 0 600 80" preserveAspectRatio="none" style="height: 70px;">
+              <!-- 8 bars -->
+              <g fill="#C9A961">
+                <rect x="0"   y="20" width="70" height="60" opacity="0.85"/>
+                <rect x="75"  y="35" width="70" height="45" opacity="0.75"/>
+                <rect x="150" y="50" width="70" height="30" opacity="0.6"/>
+                <rect x="225" y="58" width="70" height="22" opacity="0.5"/>
+                <rect x="300" y="62" width="70" height="18" opacity="0.45"/>
+                <rect x="375" y="66" width="70" height="14" opacity="0.4"/>
+              </g>
+              <!-- the long-tail spike: warning -->
+              <g fill="#E07B59">
+                <rect x="450" y="56" width="70" height="24" opacity="0.7"/>
+                <rect x="525" y="48" width="70" height="32" opacity="0.85"/>
+              </g>
+            </svg>
+            <div class="rh-hist__axis">
+              <div class="rh-hist__tick">0–1s</div>
+              <div class="rh-hist__tick">1–2</div>
+              <div class="rh-hist__tick">2–5</div>
+              <div class="rh-hist__tick">5–10</div>
+              <div class="rh-hist__tick">10–20</div>
+              <div class="rh-hist__tick">20–30</div>
+              <div class="rh-hist__tick">30–60</div>
+              <div class="rh-hist__tick">60+</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- §4 · WARDROBE (cache hit rate) -->
+      <article class="rh-panel">
+        <header class="rh-panel__head">
+          <div class="rh-panel__head-title">
+            <span class="rh-panel__title-mono">§ IV · Cache · Hit Rate</span>
+            <span class="rh-panel__title-it">The Wardrobe</span>
+          </div>
+          <div class="rh-panel__tools">
+            <button class="t-btn-ghost">This Run</button>
+          </div>
+        </header>
+
+        <div class="rh-panel__body rh-panel__body--flush">
+          <div class="rh-wardrobe">
+            <!-- bun -->
+            <div class="rh-wardrobe__cell">
+              <div class="rh-wardrobe__cell-head">
+                <span class="rh-wardrobe__name">bun</span>
+                <span class="rh-wardrobe__rate">98<span class="rh-wardrobe__rate-suffix">%</span></span>
+              </div>
+              <div class="rh-wardrobe__meta">
+                <span>4.1k hits · 84 miss</span>
+                <span class="rh-wardrobe__delta--up">▲ 1pt</span>
+              </div>
+              <svg class="rh-wardrobe__spark" viewBox="0 0 200 30" preserveAspectRatio="none">
+                <path d="M0,8 L20,7 L40,6 L60,8 L80,7 L100,5 L120,6 L140,5 L160,4 L180,5 L200,4" fill="none" stroke="#C9A961" stroke-width="1.5"/>
+              </svg>
+            </div>
+
+            <!-- npm — DROPPED -->
+            <div class="rh-wardrobe__cell">
+              <div class="rh-wardrobe__cell-head">
+                <span class="rh-wardrobe__name">npm</span>
+                <span class="rh-wardrobe__rate rh-wardrobe__rate--warn">31<span class="rh-wardrobe__rate-suffix">%</span></span>
+              </div>
+              <div class="rh-wardrobe__meta">
+                <span>312 hits · 691 miss</span>
+                <span class="rh-wardrobe__delta--down">▼ 69pt</span>
+              </div>
+              <svg class="rh-wardrobe__spark" viewBox="0 0 200 30" preserveAspectRatio="none">
+                <path d="M0,4 L20,5 L40,4 L60,3 L80,4 L100,5 L120,8 L140,16 L160,22 L180,21 L200,22" fill="none" stroke="#E07B59" stroke-width="1.5"/>
+                <!-- annotation marker at the drop -->
+                <line x1="120" y1="0" x2="120" y2="30" stroke="#E07B59" stroke-width="1" opacity="0.3" stroke-dasharray="2 2"/>
+              </svg>
+            </div>
+
+            <!-- pnpm -->
+            <div class="rh-wardrobe__cell">
+              <div class="rh-wardrobe__cell-head">
+                <span class="rh-wardrobe__name">pnpm</span>
+                <span class="rh-wardrobe__rate">94<span class="rh-wardrobe__rate-suffix">%</span></span>
+              </div>
+              <div class="rh-wardrobe__meta">
+                <span>2.8k hits · 173 miss</span>
+                <span class="rh-wardrobe__delta--up">▲ 0.4pt</span>
+              </div>
+              <svg class="rh-wardrobe__spark" viewBox="0 0 200 30" preserveAspectRatio="none">
+                <path d="M0,7 L20,8 L40,6 L60,7 L80,5 L100,6 L120,7 L140,5 L160,6 L180,5 L200,5" fill="none" stroke="#C9A961" stroke-width="1.5"/>
+              </svg>
+            </div>
+
+            <!-- turbo -->
+            <div class="rh-wardrobe__cell">
+              <div class="rh-wardrobe__cell-head">
+                <span class="rh-wardrobe__name">turbo</span>
+                <span class="rh-wardrobe__rate">89<span class="rh-wardrobe__rate-suffix">%</span></span>
+              </div>
+              <div class="rh-wardrobe__meta">
+                <span>147 hits · 18 miss</span>
+                <span class="rh-wardrobe__delta--down">▼ 6pt</span>
+              </div>
+              <svg class="rh-wardrobe__spark" viewBox="0 0 200 30" preserveAspectRatio="none">
+                <path d="M0,5 L20,4 L40,5 L60,4 L80,5 L100,6 L120,5 L140,7 L160,8 L180,9 L200,9" fill="none" stroke="#C9A961" stroke-width="1.5"/>
+              </svg>
+            </div>
+          </div>
+
+          <div style="padding: var(--t-space-3) var(--t-space-4); border-top: 1px solid var(--rule); background: rgba(224,123,89,0.04);">
+            <span class="t-meta" style="color: var(--warning); font-size: 9px;">Note from the stage manager</span>
+            <p class="t-sub" style="margin-top: 4px; font-size: 14px;">npm dropped from 100% → 31% at 14:24. <em>Lockfile churn or a rate-limited registry fetch — check <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace; font-style: normal; font-size: 11px;">registry.npmjs.org</code> response codes.</em></p>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- ── §3 · TONIGHT'S PROGRAMME (flame chart) ── -->
+    <article class="rh-panel rh-section" style="margin-bottom: var(--t-space-8);">
+      <header class="rh-panel__head">
+        <div class="rh-panel__head-title">
+          <span class="rh-panel__title-mono">§ III · Per-Job Duration</span>
+          <span class="rh-panel__title-it">Tonight's Programme</span>
+        </div>
+        <div class="rh-panel__tools">
+          <span class="t-meta" style="color: var(--muted); margin-right: 14px;">workflow · <span style="color: var(--ink-soft);">teachmehipaa.ci</span> · run #4,217</span>
+          <button class="t-btn-ghost">Past Run</button>
+          <button class="t-btn-ghost" style="color: var(--accent);">Compare</button>
+        </div>
+      </header>
+
+      <div class="rh-programme">
+        <!-- time scale -->
+        <div class="rh-programme__scale" style="margin-left: 200px; margin-right: 90px;">
+          <div class="rh-programme__tick" style="left: 0%;"><span class="rh-programme__tick-label" style="left: 0; transform: translateX(0);">0:00</span></div>
+          <div class="rh-programme__tick" style="left: 12.5%;"><span class="rh-programme__tick-label">2:30</span></div>
+          <div class="rh-programme__tick" style="left: 25%;"><span class="rh-programme__tick-label">5:00</span></div>
+          <div class="rh-programme__tick" style="left: 37.5%;"><span class="rh-programme__tick-label">7:30</span></div>
+          <div class="rh-programme__tick" style="left: 50%;"><span class="rh-programme__tick-label">10:00</span></div>
+          <div class="rh-programme__tick" style="left: 62.5%;"><span class="rh-programme__tick-label">12:30</span></div>
+          <div class="rh-programme__tick" style="left: 75%;"><span class="rh-programme__tick-label">15:00</span></div>
+          <div class="rh-programme__tick" style="left: 87.5%;"><span class="rh-programme__tick-label">17:30</span></div>
+          <div class="rh-programme__tick" style="left: 100%;"><span class="rh-programme__tick-label" style="transform: translateX(-100%);">20:00</span></div>
+        </div>
+
+        <div class="rh-programme__rows">
+
+          <div class="rh-programme__row">
+            <div class="rh-programme__label"><code>R1</code>install-deps</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar" style="left: 0%; width: 6%;">
+                <span class="rh-programme__bar-inner">1:12</span>
+              </div>
+            </div>
+            <div class="rh-programme__dur">1:12</div>
+          </div>
+
+          <!-- THE OUTLIER · setup-bun -->
+          <div class="rh-programme__row rh-programme__row--outlier" style="position: relative;">
+            <div class="rh-programme__label"><code>R4</code>setup-bun</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar rh-programme__bar--outlier" style="left: 0%; width: 80.3%;">
+                <span class="rh-programme__bar-inner">setup-bun · 16:04</span>
+              </div>
+              <!-- tooltip showing on hover (kept visible to demonstrate) -->
+              <div class="rh-programme__tooltip" style="left: 36%; top: -34px;">
+                runner-04 · 16:04 · stuck @ resolve
+              </div>
+            </div>
+            <div class="rh-programme__dur">16:04</div>
+          </div>
+
+          <div class="rh-programme__row">
+            <div class="rh-programme__label"><code>R5</code>install-deps</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar" style="left: 0%; width: 5.5%;">
+                <span class="rh-programme__bar-inner">1:06</span>
+              </div>
+            </div>
+            <div class="rh-programme__dur">1:06</div>
+          </div>
+
+          <div class="rh-programme__row">
+            <div class="rh-programme__label"><code>R6</code>lint</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar" style="left: 5.5%; width: 1.8%;">
+                <span class="rh-programme__bar-inner">22s</span>
+              </div>
+            </div>
+            <div class="rh-programme__dur">0:22</div>
+          </div>
+
+          <div class="rh-programme__row">
+            <div class="rh-programme__label"><code>R3</code>typecheck</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar" style="left: 5.5%; width: 3.2%;">
+                <span class="rh-programme__bar-inner">38s</span>
+              </div>
+            </div>
+            <div class="rh-programme__dur">0:38</div>
+          </div>
+
+          <div class="rh-programme__row">
+            <div class="rh-programme__label"><code>R3</code>build · web</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar" style="left: 8.7%; width: 21.8%;">
+                <span class="rh-programme__bar-inner">build · 4:22</span>
+              </div>
+            </div>
+            <div class="rh-programme__dur">4:22</div>
+          </div>
+
+          <div class="rh-programme__row">
+            <div class="rh-programme__label"><code>R10</code>build · admin</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar" style="left: 7.0%; width: 8.5%;">
+                <span class="rh-programme__bar-inner">1:42</span>
+              </div>
+            </div>
+            <div class="rh-programme__dur">1:42</div>
+          </div>
+
+          <div class="rh-programme__row">
+            <div class="rh-programme__label"><code>R7</code>test · unit · 1/3</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar" style="left: 30.5%; width: 26.5%;">
+                <span class="rh-programme__bar-inner">5:18</span>
+              </div>
+            </div>
+            <div class="rh-programme__dur">5:18</div>
+          </div>
+
+          <div class="rh-programme__row">
+            <div class="rh-programme__label"><code>R9</code>test · unit · 2/3</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar" style="left: 30.5%; width: 26.5%;">
+                <span class="rh-programme__bar-inner">5:18</span>
+              </div>
+            </div>
+            <div class="rh-programme__dur">5:18</div>
+          </div>
+
+          <div class="rh-programme__row">
+            <div class="rh-programme__label"><code>R11</code>test · unit · 3/3</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar" style="left: 30.5%; width: 24.2%;">
+                <span class="rh-programme__bar-inner">4:51</span>
+              </div>
+            </div>
+            <div class="rh-programme__dur">4:51</div>
+          </div>
+
+          <div class="rh-programme__row">
+            <div class="rh-programme__label"><code>R2</code>test · integration</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar" style="left: 57%; width: 10.4%;">
+                <span class="rh-programme__bar-inner">2:04</span>
+              </div>
+            </div>
+            <div class="rh-programme__dur">2:04</div>
+          </div>
+
+          <div class="rh-programme__row">
+            <div class="rh-programme__label"><code>R8</code>bundle</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar" style="left: 67%; width: 8.7%;">
+                <span class="rh-programme__bar-inner">1:44</span>
+              </div>
+            </div>
+            <div class="rh-programme__dur">1:44</div>
+          </div>
+
+          <div class="rh-programme__row">
+            <div class="rh-programme__label"><code>R8</code>deploy · preview</div>
+            <div class="rh-programme__track">
+              <div class="rh-programme__bar" style="left: 75.7%; width: 4%;">
+                <span class="rh-programme__bar-inner">48s</span>
+              </div>
+            </div>
+            <div class="rh-programme__dur">0:48</div>
+          </div>
+
+        </div>
+
+        <div style="margin-top: var(--t-space-4); padding-top: var(--t-space-3); border-top: 1px dotted var(--rule); display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted);">
+          <span>13 jobs · critical path through <span style="color: var(--warning);">setup-bun → build → test → bundle → deploy</span></span>
+          <span>total wall clock · <span style="color: var(--ink-soft);">19:44</span></span>
+        </div>
+      </div>
+    </article>
+
+    <!-- ── §5 + §6 · WIRES + NOTES row ────────────── -->
+    <div class="rh-row rh-row--equal">
+
+      <!-- §5 · THE WIRES (network) -->
+      <article class="rh-panel">
+        <header class="rh-panel__head">
+          <div class="rh-panel__head-title">
+            <span class="rh-panel__title-mono">§ V · Network · Sockets</span>
+            <span class="rh-panel__title-it">The Wires</span>
+          </div>
+          <div class="rh-panel__tools">
+            <button class="t-btn-ghost">5m</button>
+            <button class="t-btn-ghost" style="color: var(--accent);">15m</button>
+          </div>
+        </header>
+
+        <div class="rh-panel__body">
+
+          <!-- multi-line chart: outbound bytes/sec per runner -->
+          <div class="rh-net__chart">
+            <div class="rh-chart-head">
+              <span>Outbound · bytes/sec · top 4</span>
+              <span class="rh-chart-legend">
+                <span class="rh-chart-legend__item" style="color: var(--ink-soft);"><span class="rh-chart-legend__swatch" style="background: var(--accent);"></span>r-04</span>
+                <span class="rh-chart-legend__item" style="color: var(--ink-soft);"><span class="rh-chart-legend__swatch" style="background: var(--accent); opacity: 0.6;"></span>r-07</span>
+                <span class="rh-chart-legend__item" style="color: var(--ink-soft);"><span class="rh-chart-legend__swatch" style="background: var(--ink-soft);"></span>r-09</span>
+                <span class="rh-chart-legend__item" style="color: var(--ink-soft);"><span class="rh-chart-legend__swatch" style="background: var(--muted);"></span>r-11</span>
+              </span>
+            </div>
+            <svg viewBox="0 0 600 110" preserveAspectRatio="none" style="width: 100%; height: 100px;">
+              <!-- gridlines -->
+              <line x1="0" y1="27" x2="600" y2="27" stroke="#2A241D" stroke-dasharray="2 4"/>
+              <line x1="0" y1="55" x2="600" y2="55" stroke="#2A241D" stroke-dasharray="2 4"/>
+              <line x1="0" y1="83" x2="600" y2="83" stroke="#2A241D" stroke-dasharray="2 4"/>
+
+              <!-- runner-04 (the warning one - dropped to zero, then spikes) -->
+              <path d="M0,40 L40,42 L80,38 L120,45 L160,52 L200,90 L240,95 L280,98 L320,98 L360,95 L400,92 L440,88 L480,86 L520,86 L560,84 L600,82" fill="none" stroke="#E07B59" stroke-width="1.5"/>
+
+              <!-- runner-07 -->
+              <path d="M0,60 L40,55 L80,58 L120,52 L160,48 L200,50 L240,46 L280,48 L320,44 L360,42 L400,46 L440,40 L480,38 L520,42 L560,36 L600,34" fill="none" stroke="#C9A961" stroke-width="1.5" opacity="0.6"/>
+
+              <!-- runner-09 -->
+              <path d="M0,75 L40,72 L80,70 L120,68 L160,72 L200,65 L240,68 L280,62 L320,64 L360,58 L400,60 L440,55 L480,58 L520,54 L560,52 L600,50" fill="none" stroke="#B8AE9A" stroke-width="1.2"/>
+
+              <!-- runner-11 -->
+              <path d="M0,82 L40,80 L80,84 L120,82 L160,86 L200,80 L240,82 L280,78 L320,80 L360,76 L400,78 L440,74 L480,76 L520,72 L560,74 L600,70" fill="none" stroke="#6B6354" stroke-width="1.2" opacity="0.7"/>
+
+              <!-- y axis labels -->
+              <text x="4" y="14" font-family="JetBrains Mono" font-size="9" fill="#6B6354">12 MB/s</text>
+              <text x="4" y="59" font-family="JetBrains Mono" font-size="9" fill="#6B6354">6 MB/s</text>
+              <text x="4" y="105" font-family="JetBrains Mono" font-size="9" fill="#6B6354">0</text>
+
+              <!-- annotation: cloudflare ts -->
+              <line x1="200" y1="0" x2="200" y2="110" stroke="#E07B59" stroke-width="1" opacity="0.4" stroke-dasharray="3 3"/>
+              <text x="206" y="22" font-family="JetBrains Mono" font-size="9" fill="#E07B59" letter-spacing="1">14:24 · cf incident</text>
+            </svg>
+          </div>
+
+          <!-- TCP socket states -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+              <span class="t-meta" style="font-size: 9px;">TCP Socket Distribution · runner-04</span>
+              <span class="t-mono" style="font-size: 11px; color: var(--muted);">total · 87</span>
+            </div>
+            <div class="rh-net__sockets">
+              <div class="rh-net__socket">
+                <div class="rh-net__socket-label">ESTABLISHED</div>
+                <div class="rh-net__socket-val">12</div>
+                <div class="rh-net__socket-bar">
+                  <div class="rh-net__socket-bar-fill" style="width: 14%;"></div>
+                </div>
+              </div>
+              <div class="rh-net__socket">
+                <div class="rh-net__socket-label" style="color: var(--warning);">SYN_SENT</div>
+                <div class="rh-net__socket-val rh-net__socket-val--warn">63</div>
+                <div class="rh-net__socket-bar">
+                  <div class="rh-net__socket-bar-fill rh-net__socket-bar-fill--warn" style="width: 72%;"></div>
+                </div>
+              </div>
+              <div class="rh-net__socket">
+                <div class="rh-net__socket-label">TIME_WAIT</div>
+                <div class="rh-net__socket-val">12</div>
+                <div class="rh-net__socket-bar">
+                  <div class="rh-net__socket-bar-fill" style="width: 14%;"></div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top: var(--t-space-3); padding: var(--t-space-3); border: 1px solid rgba(224,123,89,0.3); border-radius: var(--t-radius); background: rgba(224,123,89,0.04);">
+              <span class="t-meta" style="color: var(--warning); font-size: 9px;">Diagnosis</span>
+              <p class="t-sub" style="margin-top: 4px; font-size: 14px;">
+                63 sockets stuck in <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace; font-style: normal; font-size: 11px;">SYN_SENT</code> on runner-04 → outbound handshakes never completing. Pattern matches the Cloudflare incident at 14:24.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </article>
+
+      <!-- §6 · NOTES (failure clustering) -->
+      <article class="rh-panel">
+        <header class="rh-panel__head">
+          <div class="rh-panel__head-title">
+            <span class="rh-panel__title-mono">§ VI · Recurring Faults</span>
+            <span class="rh-panel__title-it">Notes from the Stage Manager</span>
+          </div>
+          <div class="rh-panel__tools">
+            <button class="t-btn-ghost">Last 24h</button>
+            <button class="t-btn-ghost" style="color: var(--accent);">7 days</button>
+          </div>
+        </header>
+
+        <div class="rh-panel__body" style="padding: 0;">
+          <table class="t-table">
+            <thead>
+              <tr>
+                <th style="padding-left: var(--t-space-4); width: 60px;">Runs</th>
+                <th>Step · First Error Line</th>
+                <th>Pattern</th>
+                <th>Last</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="rh-faults__row">
+                <td style="padding-left: var(--t-space-4);"><span class="rh-faults__count">7</span></td>
+                <td>
+                  <div class="rh-faults__step">setup-bun <code>steps/setup-bun</code></div>
+                  <div class="rh-faults__error">Error: connect ETIMEDOUT 104.16.0.35:443 (registry.bun.sh)</div>
+                </td>
+                <td><span class="t-mono rh-faults__pat-cluster" style="font-size: 11px;">structural</span></td>
+                <td><span class="t-mono">just now</span></td>
+              </tr>
+              <tr class="rh-faults__row">
+                <td style="padding-left: var(--t-space-4);"><span class="rh-faults__count">4</span></td>
+                <td>
+                  <div class="rh-faults__step">test:integration <code>payment.spec.ts:142</code></div>
+                  <div class="rh-faults__error">AssertionError: expected status 200, received 503 (gateway)</div>
+                </td>
+                <td><span class="t-mono rh-faults__pat-cluster" style="font-size: 11px;">structural</span></td>
+                <td><span class="t-mono">3m ago</span></td>
+              </tr>
+              <tr class="rh-faults__row">
+                <td style="padding-left: var(--t-space-4);"><span class="rh-faults__count rh-faults__count--mild">3</span></td>
+                <td>
+                  <div class="rh-faults__step">test:unit <code>renewal-flow.test.ts:88</code></div>
+                  <div class="rh-faults__error">TimeoutError: Test exceeded 5000ms (twice in 12 runs)</div>
+                </td>
+                <td><span class="t-mono rh-faults__pat-flake" style="font-size: 11px;">flaky</span></td>
+                <td><span class="t-mono">17m ago</span></td>
+              </tr>
+              <tr class="rh-faults__row">
+                <td style="padding-left: var(--t-space-4);"><span class="rh-faults__count rh-faults__count--mild">3</span></td>
+                <td>
+                  <div class="rh-faults__step">build · web <code>vite/rollup</code></div>
+                  <div class="rh-faults__error">[plugin:vite] Could not resolve "@/lib/firebase" from src/main.ts</div>
+                </td>
+                <td><span class="t-mono rh-faults__pat-cluster" style="font-size: 11px;">structural</span></td>
+                <td><span class="t-mono">42m ago</span></td>
+              </tr>
+              <tr class="rh-faults__row">
+                <td style="padding-left: var(--t-space-4);"><span class="rh-faults__count rh-faults__count--mild">3</span></td>
+                <td>
+                  <div class="rh-faults__step">test:e2e <code>auth.spec.ts:31</code></div>
+                  <div class="rh-faults__error">TimeoutError: Waiting for selector "[data-tid=login]" failed</div>
+                </td>
+                <td><span class="t-mono rh-faults__pat-flake" style="font-size: 11px;">flaky</span></td>
+                <td><span class="t-mono">1h ago</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="padding: var(--t-space-3) var(--t-space-4); border-top: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted);">
+            <span>5 clusters · 20 affected runs</span>
+            <a href="#" style="color: var(--accent);">view all faults →</a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- ── §7 · HOUSE ACCOUNT (cost) ──────────────── -->
+    <article class="rh-panel rh-section" style="margin-bottom: 0;">
+      <header class="rh-panel__head">
+        <div class="rh-panel__head-title">
+          <span class="rh-panel__title-mono">§ VII · Cost · Utilization</span>
+          <span class="rh-panel__title-it">House Account</span>
+          <span class="t-meta" style="color: var(--muted); font-size: 9px;">— last seven days, runner-hours</span>
+        </div>
+        <div class="rh-panel__tools">
+          <button class="t-btn-ghost">7 days</button>
+          <button class="t-btn-ghost" style="color: var(--accent);">30 days</button>
+        </div>
+      </header>
+
+      <div class="rh-panel__body" style="padding: 0;">
+        <div class="rh-house">
+
+          <!-- by day -->
+          <div class="rh-house__col">
+            <div class="rh-house__col-head">
+              <span class="rh-house__col-title">By Day</span>
+              <span class="rh-house__col-total">142.6h</span>
+            </div>
+            <div class="rh-house__bars-frame">
+              <div class="rh-house__bars">
+                <div class="rh-house__bar" style="height: 48%;"><span class="rh-house__bar-label">Wed</span></div>
+                <div class="rh-house__bar" style="height: 62%;"><span class="rh-house__bar-label">Thu</span></div>
+                <div class="rh-house__bar" style="height: 58%;"><span class="rh-house__bar-label">Fri</span></div>
+                <div class="rh-house__bar" style="height: 18%;"><span class="rh-house__bar-label">Sat</span></div>
+                <div class="rh-house__bar" style="height: 14%;"><span class="rh-house__bar-label">Sun</span></div>
+                <div class="rh-house__bar" style="height: 78%;"><span class="rh-house__bar-label">Mon</span></div>
+                <div class="rh-house__bar rh-house__bar--today" style="height: 92%;"><span class="rh-house__bar-label">Tue</span></div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted);">
+              <span>peak · today · 28.4h</span>
+              <span style="color: var(--accent);">▲ 12% wow</span>
+            </div>
+          </div>
+
+          <!-- by workflow -->
+          <div class="rh-house__col">
+            <div class="rh-house__col-head">
+              <span class="rh-house__col-title">By Workflow</span>
+              <span class="rh-house__col-total">7</span>
+            </div>
+            <ul class="rh-house__list">
+              <li class="rh-house__row">
+                <span class="rh-house__row-name">teachmehipaa.ci</span>
+                <span class="rh-house__row-bar"><span class="rh-house__row-bar-fill" style="width: 100%;"></span></span>
+                <span class="rh-house__row-val">68.2h</span>
+              </li>
+              <li class="rh-house__row">
+                <span class="rh-house__row-name">osmosis.ci</span>
+                <span class="rh-house__row-bar"><span class="rh-house__row-bar-fill" style="width: 52%;"></span></span>
+                <span class="rh-house__row-val">35.4h</span>
+              </li>
+              <li class="rh-house__row">
+                <span class="rh-house__row-name">openclaw.skill-test</span>
+                <span class="rh-house__row-bar"><span class="rh-house__row-bar-fill" style="width: 28%;"></span></span>
+                <span class="rh-house__row-val">19.1h</span>
+              </li>
+              <li class="rh-house__row">
+                <span class="rh-house__row-name">truvoice.parity</span>
+                <span class="rh-house__row-bar"><span class="rh-house__row-bar-fill" style="width: 14%;"></span></span>
+                <span class="rh-house__row-val">9.8h</span>
+              </li>
+              <li class="rh-house__row">
+                <span class="rh-house__row-name">signal-engine.test</span>
+                <span class="rh-house__row-bar"><span class="rh-house__row-bar-fill" style="width: 9%;"></span></span>
+                <span class="rh-house__row-val">6.2h</span>
+              </li>
+              <li class="rh-house__row">
+                <span class="rh-house__row-name">others (2)</span>
+                <span class="rh-house__row-bar"><span class="rh-house__row-bar-fill" style="width: 5%;"></span></span>
+                <span class="rh-house__row-val">3.9h</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- by author -->
+          <div class="rh-house__col">
+            <div class="rh-house__col-head">
+              <span class="rh-house__col-title">By Author</span>
+              <span class="rh-house__col-total">4</span>
+            </div>
+            <ul class="rh-house__list">
+              <li class="rh-house__row">
+                <span class="rh-house__row-name">nick</span>
+                <span class="rh-house__row-bar"><span class="rh-house__row-bar-fill" style="width: 100%;"></span></span>
+                <span class="rh-house__row-val">94.1h</span>
+              </li>
+              <li class="rh-house__row">
+                <span class="rh-house__row-name">alex</span>
+                <span class="rh-house__row-bar"><span class="rh-house__row-bar-fill" style="width: 38%;"></span></span>
+                <span class="rh-house__row-val">35.8h</span>
+              </li>
+              <li class="rh-house__row">
+                <span class="rh-house__row-name">olya</span>
+                <span class="rh-house__row-bar"><span class="rh-house__row-bar-fill" style="width: 11%;"></span></span>
+                <span class="rh-house__row-val">10.2h</span>
+              </li>
+              <li class="rh-house__row">
+                <span class="rh-house__row-name">claude-code (bot)</span>
+                <span class="rh-house__row-bar"><span class="rh-house__row-bar-fill" style="width: 3%;"></span></span>
+                <span class="rh-house__row-val">2.5h</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- ── FOOTER ──────────────────────────────────── -->
+  <footer class="rh-foot">
+    <div class="rh-foot__end t-end">— Fin —</div>
+    <div class="rh-foot__line">
+      <span>Runner House v0.1</span><span class="t-pip">·</span>
+      <span>presented by spruce</span><span class="t-pip">·</span>
+      <span>all systems nominal · uptime 14d 22h</span>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
