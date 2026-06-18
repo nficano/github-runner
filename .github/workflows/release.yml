@@ -48,7 +48,12 @@ jobs:
       - name: Install debaser
         run: |
           tmp=$(mktemp -d)
-          curl -sL "https://github.com/nficano/debaser/releases/latest/download/debaser-v0.1.11-x86_64-unknown-linux-gnu.tar.gz" | tar xz -C "$tmp"
+          # Resolve the latest debaser tag dynamically so the pinned asset
+          # name never drifts out of sync with the "latest" release.
+          ver=$(curl -fsSLI -o /dev/null -w '%{url_effective}' \
+            https://github.com/nficano/debaser/releases/latest | sed 's#.*/tag/##')
+          echo "debaser version: $ver"
+          curl -fsSL "https://github.com/nficano/debaser/releases/download/${ver}/debaser-${ver}-x86_64-unknown-linux-gnu.tar.gz" | tar xz -C "$tmp"
           sudo mv "$tmp"/debaser-*/debaser /usr/local/bin/
           rm -rf "$tmp"
 
