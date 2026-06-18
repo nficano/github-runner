@@ -129,7 +129,9 @@ type GlobalConfig struct {
 	HealthListen    string   `toml:"health_listen"`
 	ShutdownTimeout Duration `toml:"shutdown_timeout"`
 	CheckInterval   Duration `toml:"check_interval"`
-	API             APIConfig `toml:"api"`
+	// HideBanner suppresses the ASCII art startup banner when true.
+	HideBanner bool      `toml:"hide_banner"`
+	API        APIConfig `toml:"api"`
 }
 
 // APIConfig holds settings for the GitHub API client.
@@ -189,10 +191,10 @@ type KubernetesConfig struct {
 
 // CacheConfig holds cache settings for a runner.
 type CacheConfig struct {
-	Type    string   `toml:"type"`
-	Path    string   `toml:"path"`
-	MaxSize ByteSize `toml:"max_size"`
-	S3      S3Config `toml:"s3"`
+	Type    string    `toml:"type"`
+	Path    string    `toml:"path"`
+	MaxSize ByteSize  `toml:"max_size"`
+	S3      S3Config  `toml:"s3"`
 	GCS     GCSConfig `toml:"gcs"`
 }
 

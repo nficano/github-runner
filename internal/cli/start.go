@@ -61,6 +61,9 @@ func runStart(cmd *cobra.Command, _ []string) error {
 		return newExitError(ExitConfigErr, "invalid configuration: %v", err)
 	}
 
+	// Print the ASCII art banner unless suppressed via global.hide_banner.
+	printBanner(os.Stdout, cfg.Global.HideBanner)
+
 	// Write PID file if requested.
 	if pidFile != "" {
 		if err := writePIDFile(pidFile); err != nil {

@@ -33,6 +33,7 @@ Application-wide settings.
 | `health_listen` | string | `"127.0.0.1:8484"` | Address for the health check endpoints |
 | `shutdown_timeout` | duration | `"30s"` | Max wait time for in-flight jobs during shutdown |
 | `check_interval` | duration | `"3s"` | Interval between job polling requests |
+| `hide_banner` | bool | `false` | Suppress the ASCII art banner printed on startup |
 
 ### `[global.api]`
 

@@ -14,6 +14,8 @@ health_listen = "127.0.0.1:8484"
 shutdown_timeout = "30s"
 # Interval between job polling requests
 check_interval = "3s"
+# Hide the ASCII art banner printed on startup
+hide_banner = false
 
 [global.api]
 # GitHub API base URL (change for GitHub Enterprise)

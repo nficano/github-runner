@@ -119,10 +119,10 @@ func TestDuration_UnmarshalText(t *testing.T) {
 
 func TestInterpolateEnv(t *testing.T) {
 	tests := []struct {
-		name   string
-		input  string
-		envs   map[string]string
-		want   string
+		name  string
+		input string
+		envs  map[string]string
+		want  string
 	}{
 		{
 			name:  "simple substitution",
@@ -341,6 +341,38 @@ work_dir = "/tmp/runner"
 
 	if cfg.Runners[0].Token != "ghp_interpolated_value" {
 		t.Errorf("Token = %q, want %q", cfg.Runners[0].Token, "ghp_interpolated_value")
+	}
+}
+
+func TestLoadFromBytes_HideBanner(t *testing.T) {
+	// Default (unset) leaves the banner visible.
+	cfg, err := LoadFromBytes([]byte(minimalTOML))
+	if err != nil {
+		t.Fatalf("LoadFromBytes failed: %v", err)
+	}
+	if cfg.Global.HideBanner {
+		t.Error("HideBanner = true by default, want false")
+	}
+
+	// Explicit hide_banner = true is parsed.
+	tomlData := `
+[global]
+hide_banner = true
+
+[[runners]]
+name = "banner-test"
+url = "https://github.com/nficano/github-runner"
+token = "tok"
+executor = "shell"
+concurrency = 1
+work_dir = "/tmp/runner"
+`
+	cfg, err = LoadFromBytes([]byte(tomlData))
+	if err != nil {
+		t.Fatalf("LoadFromBytes failed: %v", err)
+	}
+	if !cfg.Global.HideBanner {
+		t.Error("HideBanner = false, want true")
 	}
 }
 
